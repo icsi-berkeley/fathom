@@ -1,0 +1,82 @@
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	</head>
+	<body>
+		<link rel="stylesheet" type="text/css" href="ui/css/spinner.css" />
+		<link rel="stylesheet" type="text/css" href="ui/css/pop-up.css" />
+		<link rel="stylesheet" type="text/css" href="ui/css/node.css" />
+		<link rel="stylesheet" type="text/css" href="ui/css/netalyzr.css" />
+		
+		
+		<script src="ui/libs/jquery/jquery-1.7.2.js"></script>
+		<script src="ui/libs/d3.v2.js"></script>
+
+		<div class="result" id="result" style="overflow:auto"></div>
+		<div id="pop-up"></div>
+
+		<script type="text/javascript" src="utils/collapse.js"></script>
+		<script type="text/javascript" src="utils/display.js"></script>
+		<script type="text/javascript" src="utils/log.js"></script>
+		<script type="text/javascript" src="utils/base.js"></script>
+		<script type="text/javascript" src="utils/new_tree.js"></script>
+		<script type="text/javascript" src="utils/init.js"></script>
+		<script type="text/javascript" src="utils/collapse.js"></script>
+		<script type="text/javascript" src="utils/visualization.js"></script>
+
+		<script src="tests/http/dns/lookup.js"></script>
+		<script src="tests/http/uri.js"></script>
+
+		<script>
+			var path = "tests/basic/";
+			var _fathom_json_ = {};
+			var manifest = {
+				"api" : [
+					"socket.*",
+					"proto.*",
+					"system.*",
+					"util.*",
+				],
+				"destinations" : [
+					""
+				]
+			};
+			window.fathom.init(function(arg) { }, manifest, window);
+
+			/* globals */
+			var DNSserver = null;
+
+			(function () {
+				var num = 1;
+				
+				/* load the tests */
+				var interfaces = loadTest(path + "interfaces.js");
+				var active_interface = loadTest(path + "active_interface.js");
+				var auto_configuration = loadTest(path + "auto_configuration.js");
+				var nameserver = loadTest(path + "nameserver.js");
+
+				/* create the test tree */
+				var tree = new Tree();
+
+				var t0 = tree.addRoot(new interfaces());
+				var t1 = tree.addChild(t0, new active_interface());
+				var t2 = tree.addChild(t1, new auto_configuration());
+				var t3 = tree.addChild(t2, new nameserver());
+	
+				/* add the visualization */
+				var json = tree.toJSON();
+				var html = visualize(num, "General Connectivity Tests", json); 
+				$("#result").append(html);
+
+				/* execute the tests */
+				tree.traverse(null, num);
+				
+				/* delete tree to prevent memory leaks */
+				delete tree;
+
+				json = updateJSON(num, json);
+				display(json);				
+			})();
+		</script>
+	</body>
+</html>

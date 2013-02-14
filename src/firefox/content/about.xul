@@ -1,0 +1,81 @@
+<?xml version="1.0"?>
+<!--
+ * ***** BEGIN LICENSE BLOCK *****
+ *
+ * Copyright (c) 2011-2012 International Computer Science Institute (ICSI).
+ * All rights reserved.
+ *
+ * See LICENSE for license and terms of usage. 
+ *
+ * ***** END LICENSE BLOCK *****
+-->
+<?xml-stylesheet href="chrome://global/skin/global.css" type="text/css"?>
+<!DOCTYPE window SYSTEM "chrome://fathom/locale/window.dtd">
+
+<window xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+	id="fathom-about-dialog"
+	class="dialog"
+	title="&title.about;">
+
+	<script>
+	function fathom_about_open(url) {
+		var wm = Components.classes["@mozilla.org/appshell/window-mediator;1"]
+                   .getService(Components.interfaces.nsIWindowMediator);
+		var recentWindow = wm.getMostRecentWindow("navigator:browser");
+		if(recentWindow) {
+			recentWindow.gBrowser.selectedTab = recentWindow.gBrowser.addTab(url);
+		}
+	}
+	function fathom_about_close() {
+		window.close();
+	}
+	</script>
+
+	<vbox>
+	  <hbox>
+	    <vbox>
+	      <image id="logo" src="icons/logo.png" class="text-link" style="padding: 5px 10px" tooltiptext="Visit Fathom Home Page" onclick="fathom_about_open('http://fathom.icsi.berkeley.edu/')"/>
+	    </vbox>
+	    <vbox width="250">
+	      <label value="Fathom" class="header" style="font-size:18px" onclick="fathom_about_open('http://fathom.icsi.berkeley.edu/')"/>
+	      <label class="text-link" tooltiptext="Visit Fathom Website" onclick="fathom_about_open('http://fathom.icsi.berkeley.edu')" value="http://fathom.icsi.berkeley.edu"/>
+	      <spacer height="3"/>
+	      <description>A Firefox extension exploring the browser as a platform for network measurement.</description>
+	      <spacer height="3"/>
+	      <hbox>
+		<description id="version"></description>
+		<separator orient="vertical" style="thin"/>
+		<description>License: BSD</description>
+	      </hbox>
+	      <description>
+		Fathom is brought to you by
+		<label style="margin:0px" class="text-link" tooltiptext="Visit Author Home Page" onclick="fathom_about_open('http://paul.rutgers.edu/~mdhawan/')" value="Mohan Dhawan"/>,	    
+		<label style="margin:0px" class="text-link" tooltiptext="Visit Author Home Page" onclick="fathom_about_open('http://www.eecs.berkeley.edu/~jsamuel/')" value="Justin Samuel"/>,
+		<label style="margin:0px" class="text-link" tooltiptext="Visit Author Home Page" onclick="fathom_about_open('http://rp.lip6.fr/~teixeira/')" value="Renata Teixeira"/>,
+		<label style="margin:0px" class="text-link" tooltiptext="Visit Author Home Page" onclick="fathom_about_open('http://www.icir.org/christian/')" value="Christian Kreibich"/>,
+		<label style="margin:0px" class="text-link" tooltiptext="Visit Author Home Page" onclick="fathom_about_open('http://www.icsi.berkeley.edu/~nweaver/')" value="Nick Weaver"/>,
+		<label style="margin:0px" class="text-link" tooltiptext="Visit Author Home Page" onclick="fathom_about_open('http://www.icir.org/mallman/')" value="Mark Allman"/>, and
+		<label style="margin:0px" class="text-link" tooltiptext="Visit Author Home Page" onclick="fathom_about_open('http://www.icir.org/vern/')" value="Vern Paxson"/>.
+	      </description>
+	    </vbox>
+	  </hbox>
+	  <spacer height="5"/>
+	  <hbox align="right">
+	    <button label="Close" oncommand="fathom_about_close();"/>
+	  </hbox>
+	</vbox>
+
+	<script>
+	  var prefs = Components.classes["@mozilla.org/preferences-service;1"]
+	    .getService(Components.interfaces.nsIPrefBranch);
+	  var version = prefs.getCharPref("extensions.fathom.version");
+	  var build = prefs.getCharPref("extensions.fathom.build");
+	  var el = window.document.getElementById("version");
+	  if (el) {
+	    if (build != version) // for local checkouts
+	      el.textContent = "Version: " + version + ", build " + build;
+            else
+	      el.textContent = "Version: " + version;
+          }
+	</script>
+</window>

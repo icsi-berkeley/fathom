@@ -1,0 +1,199 @@
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+		<title>Debug my connection</title>
+		<link rel="stylesheet" href="chrome://global/skin/netError.css" type="text/css" media="all"/>
+		<link rel="icon" type="image/png" id="favicon" href="chrome://fathom/content/icons/logo-16.png"/>
+	</head>
+	<body>
+		
+		<!-- Page container, from Firefox's main error page -- here too for styling purposes only -->
+		<div id="errorPageContainer">
+			<div id="errorTitle">
+				<h1 id="errorTitleText">Connectivity analysis (<a href="#" onclick="refreshDisplay(false); return false;">Show All</a> | <a href="#" onclick="refreshDisplay(true); return false;">Show Problems</a>)</h1>
+			</div>
+
+			<div id="result"></div>
+			<div id="upload" align="center">
+				<!--h4>Click <a href="#" onclick="upload.file('baseline_debugConnection.sqlite'); return false;">here</a> to upload this debug session.</h4-->
+				<table>
+					<tbody>
+						<tr>
+							<td style="padding-right:10px;vertical-align:top;">
+								<a href="http://www.measurementlab.net" target="_top"><img src="chrome://fathom/content/icons/mlab-logo.jpg" alt="M-Lab" border="0"></a>
+							</td>
+							<td><i> Fathom uses the <a href="http://www.measurementlab.net" target="_top">Measurement Lab</a> (<a href="http://www.measurementlab.net" target="_top">M-Lab</a>) research platform.<br>	To learn what information our tool collects, please go <a href="http://www.measurementlab.net/measurement-lab-tools#fathom">here</a>.</i>
+							</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+		</div>
+		<script type='application/x-javascript'	src='upload.js'></script>
+		<script>
+			(function() {
+				var os = Components.classes["@mozilla.org/xre/app-info;1"].getService(Components.interfaces.nsIXULRuntime).OS;
+				var loadUtils = {
+					initAll: function(doc, parent) {
+						var str = 'var manifest = { \
+								"api" : [ \
+									"socket.*", \
+									"proto.*", \
+									"system.*", \
+									"util.*", \
+								], \
+								"destinations" : [ \
+									"" \
+								] \
+							}; \
+							window.fathom.init(function(arg) { }, manifest, window); \
+							var DebugTestID = Math.random().toString(36).slice(-8); \
+							var NetErrorTestID = null; \
+							window.fathom.util.insertTables("debugConnection", "testid", DebugTestID);';
+
+						loadUtils.loadScript(doc, parent, str);
+		
+						loadUtils.loadCSS(doc, parent, ["connectivity tree/ui/css/spinner.css", "connectivity tree/ui/css/netalyzr.css", "connectivity tree/ui/css/table.css"]);
+						loadUtils.loadScripts(doc, parent, [
+							"connectivity tree/utils/collapse.js",
+							"connectivity tree/ui/libs/jquery/jquery-1.7.2.js",
+							"connectivity tree/utils/display.js",
+							//
+							"connectivity tree/utils/log.js",
+							"connectivity tree/utils/base.js",
+							"connectivity tree/utils/new_tree.js",
+							"connectivity tree/utils/init.js",
+							//
+							"connectivity tree/tests/http/dns/lookup.js",
+							"connectivity tree/tests/http/uri.js",
+							//
+							"connectivity tree/globals.js",
+						]);
+					},
+	
+					loadCSS: function(doc, parent, list) {
+						for(var i = 0; i < list.length; i++) {
+							var elem = doc.createElement("link");
+							elem.rel = "stylesheet";
+							elem.type = "text/css";
+							elem.href = "chrome://fathom/content/" + list[i];
+							parent.appendChild(elem);
+						}
+					},
+	
+					loadScripts: function(doc, parent, list) {
+						for(var i = 0; i < list.length; i++) {
+							var elem = doc.createElement("script");
+							elem.type = "application/javascript";
+							elem.src = 'chrome://fathom/content/' + list[i];
+							parent.appendChild(elem);
+						}
+					},
+	
+					loadScript: function(doc, parent, text) {
+						var elem = doc.createElement("script");
+						elem.text = text;
+						parent.appendChild(elem);
+					},
+	
+					initScript: function(doc, parent, dir, list) {
+						var path = "chrome://fathom/content/connectivity tree/" + dir + "/";
+						for(var i = 0; i < list.length; i++) {
+			
+							var xhr = new XMLHttpRequest();
+							xhr.open('GET', path + list[i] + ".js", false);
+							xhr.overrideMimeType("text/plain");
+							xhr.send(null);
+			
+							loadUtils.loadScript(doc, parent, "var _text_" + list[i] + "_js = " + eval(xhr.responseText) + ";");
+						}
+					},
+	
+					customEvent: function(doc, event) {
+						var str = 'function openAboutFathom() { \
+							var element = document.createElement("AboutFathomElement"); \
+							document.documentElement.appendChild(element); \
+							\
+							var evt = document.createEvent("Events"); \
+							evt.initEvent("' + event + '", true, false); \
+							element.dispatchEvent(evt); \
+						}';
+
+						loadUtils.loadScript(doc, doc.body, str);
+					}
+				};
+
+				var showOptions = {
+
+					contentDomLoad: function(event) {
+						var contentDoc = event.target;
+						var contentWin = contentDoc.defaultView;
+
+						/*if(os == "Android") {
+							var status = fathom_toggleHelpers.getCurrentStatus();
+						} else {
+							var status = fathom_helpers.status();
+						}
+
+						if (status)*/ {
+
+							var fathomDiv = contentDoc.getElementById("result");
+							loadUtils.initAll(contentDoc, fathomDiv);
+						
+							/* scripts for generic connectivity tests */
+							loadUtils.initScript(contentDoc, fathomDiv, "tests/basic", ["interfaces", "active_interface", "auto_configuration", "nameserver"]);
+							loadUtils.loadScripts(contentDoc, fathomDiv, ["connectivity tree/basic.js"]);
+			
+							/* scripts for network and transport level tests */
+							if(os == "Android") {
+								loadUtils.initScript(contentDoc, fathomDiv, "tests/network", ["routing_table"]);//, "traceroute"
+							} else {
+								loadUtils.initScript(contentDoc, fathomDiv, "tests/network", ["routing_table", "traceroute"]);
+							}
+							loadUtils.loadScripts(contentDoc, fathomDiv, ["connectivity tree/network.js"]);
+			
+							showOptions.performAction(contentDoc, fathomDiv);
+							
+							var done = false;
+							var timerID = setInterval(function() {
+								if(done) {
+									clearInterval(timerID);
+									upload.file('baseline_debugConnection.sqlite');
+								} else {
+									// check if all tests are done
+									var divs = contentDoc.getElementsByTagName("div");
+									var total = 0;
+									for(var i = 0; i < divs.length; i++) {
+										if(divs[i].getAttribute('id') == "floatingBarsG")
+											total++;
+									}
+									if(total == 0)
+										done = true;
+								}
+							}, 500);						
+						}
+					},
+	
+					performAction: function(doc, div) {
+					
+						var uri = "http://www.google.com/";
+					
+						/* scripts for DNS level tests */
+						loadUtils.initScript(doc, div, "tests/dns", ["nameserver", /*"lookup_host", "lookup_host_cd", "lookup_public",*/ "lookup_standard"]);
+						// To test for CD option
+						//loadUtils.loadScript(doc, div, "DNSserver = '149.20.64.20', domainName = 'www.dnssec-failed.org';");
+						loadUtils.loadScript(doc, div, "domainName = (new Uri('" + uri + "')).host;");
+						loadUtils.loadScripts(doc, div, ["connectivity tree/dns_debug_my_connection.js"]);
+
+						/* scripts for HTTP level tests */
+						loadUtils.initScript(doc, div, "tests/http", ["entity_debug_my_connection"/*, "local_proxy", "https", "connect_proxy", "another_site_via_proxy"*/]);
+						loadUtils.loadScript(doc, div, "url = '" + uri + "';");
+						loadUtils.loadScripts(doc, div, ["connectivity tree/http_debug_my_connection.js"]);		
+					}
+				};
+				
+				window.document.addEventListener('DOMContentLoaded', showOptions.contentDomLoad, false);
+			})();
+		</script>
+	</body>
+</html>

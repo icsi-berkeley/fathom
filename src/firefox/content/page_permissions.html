@@ -1,0 +1,166 @@
+<!--
+ * ***** BEGIN LICENSE BLOCK *****
+ *
+ * Copyright (c) 2011-2012 International Computer Science Institute (ICSI).
+ * All rights reserved.
+ *
+ * See LICENSE for license and terms of usage. 
+ *
+ * ***** END LICENSE BLOCK *****
+-->
+
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+</head>
+<style>
+  .pad {
+    padding: 10px;
+  }
+  body {
+    font-size: 87%;
+    margin: 0;
+    font-family: sans-serif;
+  }
+  #header {
+    font-size: 1.5em;
+    background-color: #fedede;
+    border-bottom: 1px solid #cebebe;
+  }
+  #content {
+  	background-color: #fafafa;
+  }
+  #url {
+    background-color: #fafafa;
+    border-bottom: 1px solid #dedede;
+    font-weight: bold;
+  }
+  #buttontable {
+    margin-top : 2em;
+    width : 100%;
+  }
+  #buttontable td {
+    width : 50%;
+    text-align: center;
+  }
+  .button {
+    font-size: 2.0em
+  }
+</style>
+<script>
+  var args = window.arguments[0].wrappedJSObject;
+  var url = args['url'];
+  var callback = args['callback'];
+  var requested_apis = args['requested_apis'];
+  var requested_destinations = args['requested_destinations'];
+  var api = args['api'];
+  var fullapi = args['fullapi'];
+  var allowed_destinations = args['allowed_destinations'];
+
+  var apiDesc = {
+  	'proto': 'APIs allow DNS, mDNS, HTTP and UPnP protocol access.',
+  	'socket': 'APIs allow low-level socket communication.',
+  	'system': 'APIs allow access to system utilities.',
+  	'util': 'APIs allow access to timer, browser APIs and metrics.'
+  };
+
+  function writeBody() {
+    // Reminder: certainly don't want document.write or .innerHtml for XSS reasons.
+    // TODO: Even though we're using textContent, we should also filter characters.
+
+    document.getElementById('url').textContent = url;
+    //document.getElementById('url').textContent = 'http://www.example.com/foo/bar.html';
+
+    if (requested_apis.length > 0) {
+      var ul = document.getElementById('requested_apis');
+      for (var i=0; i<requested_apis.length; i++) {
+        apimodule = requested_apis[i][0];
+        apifunc = requested_apis[i][1];
+        var item = document.createElement('li');
+        item.textContent = apimodule + '.' + apifunc + " : " + apiDesc[apimodule];
+        ul.insertBefore(item, null);
+      }
+      document.getElementById('apis').style.display = "block";
+    }
+
+    if (requested_destinations.length > 0) {
+      var ul = document.getElementById('requested_destinations');
+      for (var i=0; i<requested_destinations.length; i++) {
+        destination = requested_destinations[i];
+        if(destination.trim() == "")
+        	continue;
+        var item = document.createElement('li');
+        item.textContent = destination;
+        ul.insertBefore(item, null);
+      }
+      document.getElementById('destinations').style.display = "block";
+    }
+  }
+
+  function permissionsGranted() {
+    for (var i=0; i<requested_apis.length; i++) {
+      // Put the modules or functions in the window's fathom object.
+      apimodule = requested_apis[i][0];
+      apifunc = requested_apis[i][1];
+      if (apifunc == '*') {
+        api[apimodule] = fullapi[apimodule];
+      } else {
+        api[apimodule][apifunc] = fullapi[apimodule][apifunc];
+      }
+    }
+
+    for (var i=0; i<requested_destinations.length; i++) {
+      // Add the destinations to the allowed_destinations.
+      allowed_destinations.push(requested_destinations[i]);
+    }
+
+    setTimeout(callback, 0);
+    window.close();
+  }
+
+  function permissionsDenied() {
+    setTimeout(callback, 0, {error:"User did not grant access to Fathom APIs."});
+    window.close();
+  }
+</script>
+<body onLoad="writeBody(); document.getElementById('deny').focus();">
+
+<div id="header" class="pad">
+  A web page is requesting Fathom privileges.
+</div>
+
+<div id="url" class="pad"></div>
+
+<div id="content" class="pad">
+
+  <div id="apis" style="display:none">
+    The page wants to use these APIs:
+    <ul id="requested_apis"></ul>
+  </div>
+
+  <div id="destinations" style="display:none">
+    The page wants to communicate with:
+    <ul id="requested_destinations"></ul>
+  </div>
+
+
+  <table id="buttontable">
+    <tr>
+      <td>
+        <form action="javascript:permissionsGranted()">
+          <input type="submit" value="Allow" id="allow" class="button" />
+        </form>
+      </td>
+      <td>
+        <form action="javascript:permissionsDenied()">
+          <input type="submit" value="Deny" id="deny" class="button" />
+        </form>
+      </td>
+    </tr>
+  </table>
+
+
+</div>
+
+</body>
+</html>

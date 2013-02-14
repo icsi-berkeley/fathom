@@ -1,0 +1,326 @@
+/* This stylesheet is for the Fathom content injected into FF's error pages.
+ *
+ * red:           #a01010  
+ * gray:          #606060
+ * yellow:        #ffb515
+ * darker yellow: #eaa000
+ */
+ 
+#result {
+  background-color: white;
+  font-size: 13px;
+  margin-left: 2px;
+  padding-left: 78px;
+  margin-top: 40px;
+  background: url("chrome://fathom/content/icons/logo-48.png") left 0 no-repeat;
+}
+
+#fathomhdr {  
+  font-size: 130%;
+  font-weight: bold;
+  border-bottom: 1px solid ThreeDLightShadow;
+}
+
+.txt-section { margin-bottom: 6px; font-size:110%; font-weight:bold; }
+
+.cat {
+  position: relative; 
+  margin:4px 0px 18px 0px;
+  padding:3px 3px;
+}
+
+/* Delete below -- it's cut'n'paste */
+
+hr.summary {
+  border:0px; height:1px;
+  margin:1px 0px 15px 0px;
+  background:#707070; color:#707070;
+}
+
+p { margin: 10px 0px; } /* General spacing */
+div[id=blog-content] div[class=cat] p { margin: 10px 0px; } /* For blog entries */
+div[class=cat] p { margin: 2px 0px; } /* For summary page */
+p.center { margin: 0px 0px 6px 0px; text-align:center; }
+
+#frame { 
+  background:#fff; 
+  padding: 3px 3px 2px 3px; 
+  -moz-border-radius: 12px;
+  -webkit-border-radius: 12px;
+  border-radius: 12px 12px 12px 12px;
+}
+
+.hdr { font-size:16px; padding: 0px 2px;}
+
+#bar {
+  position:relative;
+  background:#e0e0e0;
+  color:#fff;
+  padding:2px 2px;
+  font-size:11px;
+  border-top: 1px solid #ffb515;
+  border-bottom: 1px solid #ffb515;
+}
+
+#bar-right {
+  position:absolute; top:0px; right:0px;
+  float:right; text-align:right;
+  padding:0px 2px; font-size:11px;
+}
+
+#langpicker { 
+  position:absolute; top:18px; right:0px;
+  float:right; text-align:left;
+  padding:2px 2px;
+  font-size:11px;
+  background:#0a0545;
+  color:#fff;
+  display:none;
+  border-radius:6px; -moz-border-radius:6px;-webkit-border-radius:6px;
+}
+
+#langpicker ul {
+  list-style: none;
+  text-indent: 0px;
+  margin: 1px 10px;
+  padding: 1px 1px;
+}
+
+#langpicker li a { 
+  color:#fff;
+  text-decoration:none;
+}
+
+#langpicker li a:hover { 
+  color:#ffb515;
+  text-decoration:none;
+}
+
+#content { background:#fff; padding:20px 0px 5px 0px; }
+#content-main { background:#fff; padding:20px 20px 5px 20px; overflow:auto; }
+#content-centered {
+  background:#fff;
+  padding:20px 2px 5px 2px;
+  text-align:center;
+}
+
+#footer {
+  background:#e0e0e0; color:#fff;
+  padding: 2px 5px; font-size:11px;
+  margin-bottom: 1px;
+  position:relative;
+  border-top: 1px solid #ffb515;
+
+  -moz-border-radius-bottomleft: 12px;
+  -moz-border-radius-bottomright: 12px;
+
+  -webkit-border-bottom-left-radius: 12px;
+  -webkit-border-bottom-right-radius: 12px;
+
+  border-bottom-left-radius: 12px;
+  border-bottom-right-radius: 12px;
+}
+#footer-right {
+  position:absolute; top:0px; right:0px;
+  float:right; text-align:right;
+  padding:2px 5px; font-size:11px;
+}
+
+
+/*** IE6 Fix ***/
+* html #blog-3c-left { 
+  left: 150px;           /* RC width */
+}
+
+.blog-sidetitle { font-weight:bold; }
+.blog-side { margin-bottom: 10px; }
+
+a { color:#606060; text-decoration:underline; }
+a.plain { text-decoration:none; }
+a.boxlink { color:#a01010; font-weight:bold; text-decoration:none; }
+a.footer-it { color:#606060; text-decoration:none; }
+a.exp { color:#0a0545 !important; text-decoration:none; font-size:16px; }
+.exp-off { color:#ddd !important; text-decoration:none; font-size:16px; }
+a.exp-right { color:#606060 !important; text-decoration:none; font-size:16px;
+  position:absolute; top:0px; right:0px;
+  float:right; text-align:right;
+  padding-right: 2px;
+}
+a.exp-right-cat { color:#0a0545 !important; text-decoration:none; font-size:18px;
+  position:absolute; top:0px; right:0px;
+  float:right; text-align:right;
+  padding-right: 4px;
+}
+a.promo{ font-weight:bold; text-decoration:none; font-size:12px; }
+.promo { text-align:center; vertical-align: middle; }
+
+div.exp-right { color:#606060 !important; text-decoration:none; font-size:13px;
+  position:absolute; top:0px; right:0px;
+  float:right; text-align:right;
+  padding-right: 2px;
+}
+
+ul.policy {
+  list-style: disc outside;
+  text-indent: 0px;
+  margin: 5px 5px 10px 0px;
+  padding-left: 17px;
+}
+
+ul.faq {
+  list-style: none;
+  text-indent: -1.45em; 
+  margin: 5px 5px 10px 0px;
+  padding-left: 20px;
+  }
+li.qu:before { content:"Q: "; font-weight:bold; color:#a01010; }
+li.qu { font-weight:bold; }
+li.an:before { content:"A: "; font-weight:bold; color:#0a0545; }
+
+#box { margin: 0px auto; text-align:center; }
+#box-inner { padding:2px; }
+.linkbox { font-size: 14px; margin: 15px auto; text-align:center; }
+
+.tbl { font-size: 10px; text-align: left; }
+.tblt { border-bottom: 1px solid #606060; }
+.stbl0 { background-color: #e0fada; vertical-align: top;}
+.stbl1 { background-color: #f0fff0; vertical-align: top;}
+.wtbl0 { background-color: #fff6d6; vertical-align: top;}
+.wtbl1 { background-color: #fffaf0; vertical-align: top;}
+.etbl0 { background-color: #fae4e0; vertical-align: top;}
+.etbl1 { background-color: #fff0f0; vertical-align: top;}
+
+.txt-icsi { font-size:22px; font-weight:lighter; }
+.txt-isp { color:#0a0545; font-size:30px; font-weight:lighter; }
+.txt-beta { color:#a01010; font-size:14px; font-weight:lighter; }
+.txt-title { color:#0a0545; font-size:20px; font-weight:bold; margin-bottom: 5px; }
+.txt-summary { color:#0a0545; font-size:16px; font-weight:bold; }
+.txt-slash { color:#0a0545; font-size:14px; font-weight:bold; }
+.txt-bold { font-weight:bold; }
+.txt-italic { font-style:italic; }
+.txt-help { font-size:14px; font-weight:normal; color:#606060; }
+.txt-small { font-size:10px; font-weight:lighter; color:#606060; }
+.txt-high{ font-size:10px; vertical-align:super; }
+.txt-dark { color:#606060; }
+.txt-current { color:#a01010; }
+.txt-done { color:#a0a0a0; }
+.txt-todo { color:#606060; }
+.txt-res-hdr { font-weight:normal; margin: 10px 0px 6px 0px; }
+.txt-updated { text-align:center; font-size:24px; font-weight:lighter; margin-bottom: 15px; }
+.txt-clickme { text-align:center; font-size:18px; font-weight: bold; color:#a01010; }
+.txt-right { position:absolute; top:0px; right:0px;
+  float:right; text-align:right;
+  padding-right: 5px; }
+
+.cat-exp { 
+  margin:0px 0px 1px 0px;
+  padding:0px 2px 0px 4px;
+  background:#eaeaea;
+}
+
+.t-exp { 
+  margin: 0px 0px 6px 0px;
+  padding: 0px 0px 0px 0px;
+}
+
+.t-content-exp { 
+  border-left: 4px solid #f0f0f0; 
+}
+
+.t-short { 
+  margin: 0px 0px 0px 0px;
+}
+
+.not-ex { 
+  margin:1px 0px;
+  padding:2px 2px 2px 8px;
+  border-left: 4px solid #808080; 
+  background:#f0f0f0;
+}
+
+.prohib { 
+  margin:1px 0px;
+  padding:2px 2px 2px 8px;
+  border-left: 4px solid #808080;
+  background:#f0f0f0;
+}
+
+.error { 
+  margin:1px 0px;
+  padding:2px 2px 2px 8px;
+  border-left: 4px solid #e04040;
+  background:#fff0f0;
+}
+
+.success { 
+  margin:1px 0px;
+  padding:2px 2px 2px 8px;
+  border-left: 4px solid #90e070;
+  background:#f0fff0;
+}
+
+.warning { 
+  margin:1px 0px;
+  padding:2px 2px 2px 8px;
+  border-left: 4px solid #ffb515;
+  background:#fffaf0;
+}
+
+.sum {  
+  position:relative; 
+  margin:1px 0px;
+  padding:0px 2px 0px 0px;
+  background:#f0f0f0;
+  height: 20px;
+  overflow: hidden;
+  vertical-align: middle;
+}
+       
+.sum0 {  
+  position:relative; 
+  margin:1px 0px;
+  padding:0px 2px 0px 0px;
+  background:#f0f0f0;
+  height: 20px;
+  overflow: hidden;
+  vertical-align: middle;
+}
+       
+.sum1 {  
+  position:relative; 
+  margin:1px 0px;
+  padding:0px 2px 0px 0px;
+  background:#f0fff0;
+  height: 20px;
+  overflow: hidden;
+  vertical-align: middle;
+}
+       
+.sum2 {  
+  position:relative; 
+  margin:1px 0px;
+  padding:0px 2px 0px 0px;
+  background:#fffaf0;
+  height: 20px;
+  overflow: hidden;
+  vertical-align: middle;
+}
+       
+.sum3 {  
+  position:relative; 
+  margin:1px 0px;
+  padding:0px 2px 0px 0px;
+  background:#fff0f0;
+  height: 20px;
+  overflow: hidden;
+  vertical-align: middle;
+}
+       
+.sum-colors { display:inline; float:left; height:100%; }
+.sum-col-0 {  border-left:8px solid #808080; width: 8px; }
+.sum-col-1 {  border-left:8px solid #90e070; width: 8px; }
+.sum-col-2 {  border-left:8px solid #ffb515; width: 8px; }
+.sum-col-3 {  border-left:8px solid #e04040; width: 8px; }
+
+#v6img { visibility:hidden }
+

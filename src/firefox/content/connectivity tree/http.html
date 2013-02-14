@@ -1,0 +1,82 @@
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	</head>
+	<body>
+		<link rel="stylesheet" type="text/css" href="ui/css/spinner.css" />
+		<!-- borrowing the Netalyzr UI -->
+		<link rel="stylesheet" type="text/css" href="ui/css/netalyzr.css" />
+		<script type="text/javascript" src="http://netalyzr.icsi.berkeley.edu/collapse.js"></script>
+		
+		<!-- jquery scripts -->
+		<script src="ui/libs/jquery/jquery-1.7.2.js"></script>
+
+		<!-- results DIV -->
+		<div class="result" id="result" overflow:auto></div>
+
+		<!-- initialization -->
+		<script src="utils/display.js"></script>
+		<script src="utils/log.js"></script>
+		<script src="utils/base.js"></script>
+		<script src="utils/new_tree.js"></script>
+		<script src="utils/init.js"></script>
+
+		<!-- helper scripts -->
+		<script src="tests/http/dns/lookup.js"></script>
+		<script src="tests/http/uri.js"></script>
+
+		<script>
+			var path = "tests/http/";
+
+			var manifest = {
+				'api' : [
+					'socket.*',
+					'proto.*',
+					'system.*',
+					'util.*',
+				],
+				'destinations' : [
+					''
+				]
+			};
+			window.fathom.init(function(arg) { }, manifest, window);
+
+			/* globals */
+			var DNSServer = "192.150.186.8";
+			var proxy = null;
+			var url = null;
+			var standardURL = "http://www.google.com/";
+
+			function runHTTPTests(testUrl) {
+				url = testUrl;
+
+				/* load the tests */
+				var entity = loadTest(path + "entity.js");
+				var local_proxy = loadTest(path + "local_proxy.js");
+				var https = loadTest(path + "https.js");
+				var connect_proxy = loadTest(path + "connect_proxy.js");
+				var another_site_via_proxy = loadTest(path + "another_site_via_proxy.js");
+
+				/* create the test tree */
+				var tree = new Tree();
+
+				var t0 = tree.addRoot(new entity());
+				var t1 = tree.addChild(t0, new local_proxy());
+				var t2 = tree.addChild(t0, new https());
+				var t3 = tree.addChild(t1, new connect_proxy());
+				var t4 = tree.addChild(t3, new another_site_via_proxy());
+
+				/* add the visualization */
+				visualize("HTTP Tests", tree.toJSON());
+
+				/* execute the tests */
+				tree.traverse();
+
+				/* delete tree to prevent memory leaks */
+				delete tree;
+			}
+
+			runHTTPTests("http://www.bbc.com/qwerty");
+		</script>
+	</body>
+</html>

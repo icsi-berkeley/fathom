@@ -1,0 +1,71 @@
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	</head>
+	<body>
+		<link rel="stylesheet" type="text/css" href="ui/css/spinner.css" />
+		<!-- borrowing the Netalyzr UI -->
+		<link rel="stylesheet" type="text/css" href="ui/css/netalyzr.css" />
+		<script type="text/javascript" src="http://netalyzr.icsi.berkeley.edu/collapse.js"></script>
+		
+		<!-- jquery scripts -->
+		<script src="ui/libs/jquery/jquery-1.7.2.js"></script>
+
+		<!-- results DIV -->
+		<div class="result" id="result" overflow:auto></div>
+
+		<!-- initialization -->
+		<script src="utils/display.js"></script>
+		<script src="utils/log.js"></script>
+		<script src="utils/base.js"></script>
+		<script src="utils/new_tree.js"></script>
+		<script src="utils/init.js"></script>
+
+		<!-- helper scripts -->
+		<script src="tests/http/dns/lookup.js"></script>
+		<script src="tests/http/uri.js"></script>
+
+		<script>
+			var path = "tests/network/";
+
+			var manifest = {
+				'api' : [
+					'socket.*',
+					'proto.*',
+					'system.*',
+					'util.*',
+				],
+				'destinations' : [
+					''
+				]
+			};
+			window.fathom.init(function(arg) { }, manifest, window);
+
+			/* globals */
+			var Gateway = [];
+			var echoServer = "74.125.224.133";//"157.166.226.26";//"157.166.255.19";//"212.58.241.131";//"74.125.224.116";//
+
+			(function () {
+
+				/* load the tests */
+				var routing_table = loadTest(path + "routing_table.js");
+				var traceroute = loadTest(path + "traceroute.js");
+
+				/* create the test tree */
+				var tree = new Tree();
+
+				var t0 = tree.addRoot(new routing_table());
+				var t1 = tree.addChild(t0, new traceroute());
+	
+				/* add the visualization */
+				visualize("Network/Transport-level Tests", tree.toJSON());
+
+				/* execute the tests */
+				tree.traverse();
+
+				/* delete tree to prevent memory leaks */
+				delete tree;
+			})();
+		</script>
+	</body>
+</html>

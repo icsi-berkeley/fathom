@@ -1,0 +1,902 @@
+JSON ouput for various measurements
+-----------------------------------
+
+ps: '__exposedProps__' is a Firefox specific object property to safely allow web
+pages to access properties defined on privileged JavaScript objects.
+
+I) End-host metrics
+-------------------
+
+a) System performance
+
+	Total number of tasks (running and sleeping) on the end-host,
+    User and system CPU usage
+    Free and used memory on the system
+
+{
+    "tasks": {
+        "total": "179",
+        "running": "2",
+        "sleeping": "177",
+        "__exposedProps__": {
+            "total": "r",
+            "running": "r",
+            "sleeping": "r"
+        }
+    },
+    "cpu": {
+        "user": "14.9",
+        "system": "4.7",
+        "__exposedProps__": {
+            "user": "r",
+            "system": "r"
+        }
+    },
+    "memory": {
+        "used": "1476268",
+        "free": "576068",
+        "__exposedProps__": {
+            "used": "r",
+            "free": "r"
+        }
+    },
+    "time": 1360288945566,
+    "__exposedProps__": {
+        "tasks": "r",
+        "cpu": "r",
+        "memory": "r",
+        "time": "r"
+    }
+}
+
+b) End-host environment
+
+Fathom records active interface info (name, IP and IP version), browser info 
+(vendor, name, version), Fathom info (build, version), Unique user ID, OS name, 
+and DNS info (domain and list of nameservers).
+
+{
+    "interface": {
+        "current": "wlan0",
+        "ip": "192.168.236.53",
+        "version": "IPv4"
+    },
+    "browser": {
+        "vendor": "Mozilla",
+        "name": "Firefox",
+        "version": "18.0"
+    },
+    "fathom": {
+        "build": "776",
+        "version": "0.2",
+        "installationID": "v06vu9o2"
+    },
+    "os": "Linux",
+    "dns": {
+        "domain": "rutgers.edu",
+        "list": [
+            "192.168.232.1",
+            "192.168.232.6"
+        ],
+        "__exposedProps__": {
+            "domain": "r",
+            "list": "r"
+        }
+    },
+    "time": 1360098204727
+}
+
+c) Active interface information
+
+	TX bytes, packets, errors, drops
+    RX bytes, packets, errors, drops
+    HTTP bytes sent and received (as observed by the browser -- this helps to determine if HTTP cross-traffic exists on the host)
+
+{
+    "tx": {
+        "bytes": "258656306",
+        "packets": "2208250",
+        "errs": "0",
+        "drops": "0",
+        "__exposedProps__": {
+            "bytes": "r",
+            "packets": "r",
+            "errs": "r",
+            "drops": "r"
+        }
+    },
+    "rx": {
+        "bytes": "3177953262",
+        "packets": "2891143",
+        "errs": "0",
+        "drops": "0",
+        "__exposedProps__": {
+            "bytes": "r",
+            "packets": "r",
+            "errs": "r",
+            "drops": "r"
+        }
+    },
+    "time": 1360288945065,
+    "__exposedProps__": {
+        "tx": "r",
+        "rx": "r",
+        "time": "r"
+    },
+    "httpsend": 515789,
+    "httprecv": 124628485
+}
+
+d) Wifi characteristics: signal strength, link and noise
+
+{
+    "link": "70",
+    "signal": "-37",
+    "noise": "-256",
+    "time": 1360332473745,
+    "__exposedProps__": {
+        "link": "r",
+        "signal": "r",
+        "noise": "r",
+        "time": "r"
+    }
+}
+
+e) Browser memory consumption
+
+{
+    "memory": "230.293",
+    "time": 1360295290033
+}
+
+II) Active measurements
+-----------------------
+
+a) Debug my connection
+
+SQLite Schema -- > "id","testid","uri","interfaces","configuration","auto","routing","traceroute","nameservers","lookup_standard","http"
+
+    id: This is the row id in the database.
+    testid: Each “debug” session is given a unique id to differentiate it from other debug sessions.
+    uri: This is currently always set to empty string.
+    interfaces: List of available interfaces which are configured. Details include name, MTU, MAC, TX and RX bytes.
+    configuration: This lists the interface name and IP for the configured interfaces.
+    auto: This field indicates if the active interfaces' addresses are auto-configured.
+    routing: This indicates the host's routing configuration.
+    traceroute: Lists the details of a traceroute to an echo server.
+    nameservers: List of the configured resolvers on the host.
+    lookup_standard:  This records the 'A' record for a standard domain (currently www.google.com) via the configured resolver.
+    http: Indicates the HTTP response code for the test to download the HTTP entity body for a standard URL (currently http://www.google.com).
+
+Entry -->
+
+"1","bcb91sxh","","[
+    {
+        ""address"": {
+            ""ipv4"": ""192.168.1.127"",
+            ""ipv6"": ""fe80: : 21c: bfff: fe0d: 98b/64"",
+            ""broadcast"": ""192.168.1.255"",
+            ""mask"": ""255.255.255.0"",
+            ""__exposedProps__"": {
+                ""ipv4"": ""r"",
+                ""ipv6"": ""r"",
+                ""broadcast"": ""r"",
+                ""mask"": ""r""
+            }
+        },
+        ""name"": ""wlan0"",
+        ""mtu"": ""1500"",
+        ""mac"": ""00: 1c: bf: 0d: 09: 8b"",
+        ""tx"": ""1186251950(1.1GB)"",
+        ""rx"": ""3385948217(3.3GB)""
+    }
+]","""wlan0,
+IP=192.168.1.127""","true","{
+    ""entry"": {
+        ""destination"": [
+            ""192.168.1.0"",
+            ""169.254.0.0"",
+            ""0.0.0.0""
+        ],
+        ""gateway"": [
+            ""0.0.0.0"",
+            ""0.0.0.0"",
+            ""192.168.1.1""
+        ],
+        ""mask"": [
+            ""255.255.255.0"",
+            ""255.255.0.0"",
+            ""0.0.0.0""
+        ],
+        ""interface"": [
+            ""wlan0"",
+            ""wlan0"",
+            ""wlan0""
+        ],
+        ""__exposedProps__"": {
+            ""destination"": ""r"",
+            ""gateway"": ""r"",
+            ""mask"": ""r"",
+            ""interface"": ""r""
+        }
+    },
+    ""defaultEntry"": [
+        {
+            ""gateway"": ""192.168.1.1"",
+            ""interface"": ""wlan0"",
+            ""version"": ""IPv4"",
+            ""__exposedProps__"": {
+                ""gateway"": ""r"",
+                ""interface"": ""r"",
+                ""version"": ""r""
+            }
+        }
+    ],
+    ""__exposedProps__"": {
+        ""entry"": ""r"",
+        ""defaultEntry"": ""r""
+    }
+}","{
+    ""target"": ""192.150.187.12"",
+    ""hop"": [
+        {
+            ""id"": ""1"",
+            ""host"": ""192.168.1.1"",
+            ""ip"": ""192.168.1.1"",
+            ""rtt1"": ""4.648"",
+            ""rtt2"": ""4.661"",
+            ""rtt3"": ""4.733""
+        },
+        {
+            ""id"": ""2"",
+            ""host"": ""vlan44-lcsr-gw.rutgers.edu"",
+            ""ip"": ""165.230.44.65"",
+            ""rtt1"": ""11.596"",
+            ""rtt2"": ""11.681"",
+            ""rtt3"": ""11.730""
+        },
+        {
+            ""id"": ""3"",
+            ""host"": ""172.28.1.33"",
+            ""ip"": ""172.28.1.33"",
+            ""rtt1"": ""5.603"",
+            ""rtt2"": ""5.694"",
+            ""rtt3"": ""5.852""
+        },
+        {
+            ""id"": ""4"",
+            ""host"": ""172.28.6.38"",
+            ""ip"": ""172.28.6.38"",
+            ""rtt1"": ""5.669"",
+            ""rtt2"": ""5.851"",
+            ""rtt3"": ""5.916""
+        },
+        {
+            ""id"": ""5"",
+            ""host"": ""172.28.194.2"",
+            ""ip"": ""172.28.194.2"",
+            ""rtt1"": ""18.575"",
+            ""rtt2"": ""21.044"",
+            ""rtt3"": ""21.399""
+        },
+        {
+            ""id"": ""6"",
+            ""host"": ""172.28.193.89"",
+            ""ip"": ""172.28.193.89"",
+            ""rtt1"": ""21.109"",
+            ""rtt2"": ""6.535"",
+            ""rtt3"": ""4.809""
+        },
+        {
+            ""id"": ""7"",
+            ""host"": ""172.28.193.102"",
+            ""ip"": ""172.28.193.102"",
+            ""rtt1"": ""4.835"",
+            ""rtt2"": ""6.983"",
+            ""rtt3"": ""7.051""
+        },
+        {
+            ""id"": ""8"",
+            ""host"": ""172.28.193.17"",
+            ""ip"": ""172.28.193.17"",
+            ""rtt1"": ""14.457"",
+            ""rtt2"": ""14.489"",
+            ""rtt3"": ""14.579""
+        },
+        {
+            ""id"": ""9"",
+            ""host"": ""216.27.98.93"",
+            ""ip"": ""216.27.98.93"",
+            ""rtt1"": ""17.317"",
+            ""rtt2"": ""17.376"",
+            ""rtt3"": ""17.572""
+        },
+        {
+            ""id"": ""10"",
+            ""host"": ""remote.internet2.magpi.net"",
+            ""ip"": ""216.27.100.54"",
+            ""rtt1"": ""20.466"",
+            ""rtt2"": ""27.034"",
+            ""rtt3"": ""27.082""
+        },
+        {
+            ""id"": ""11"",
+            ""host"": ""*"",
+            ""ip"": ""*"",
+            ""rtt1"": ""*"",
+            ""rtt2"": ""*"",
+            ""rtt3"": ""*""
+        },
+        {
+            ""id"": ""12"",
+            ""host"": ""ae-8.10.rtr.atla.net.internet2.edu"",
+            ""ip"": ""64.57.28.6"",
+            ""rtt1"": ""26.358"",
+            ""rtt2"": ""31.386"",
+            ""rtt3"": ""24.044""
+        },
+        {
+            ""id"": ""13"",
+            ""host"": ""xe-1-0-0.0.rtr.hous.net.internet2.edu"",
+            ""ip"": ""64.57.28.112"",
+            ""rtt1"": ""47.784"",
+            ""rtt2"": ""47.994"",
+            ""rtt3"": ""48.124""
+        },
+        {
+            ""id"": ""14"",
+            ""host"": ""ge-6-1-0.0.rtr.losa.net.internet2.edu"",
+            ""ip"": ""64.57.28.96"",
+            ""rtt1"": ""402.178"",
+            ""rtt2"": ""402.967"",
+            ""rtt3"": ""403.160""
+        },
+        {
+            ""id"": ""15"",
+            ""host"": ""hpr-lax-hpr--i2-newnet.cenic.net"",
+            ""ip"": ""137.164.26.133"",
+            ""rtt1"": ""78.922"",
+            ""rtt2"": ""79.601"",
+            ""rtt3"": ""79.771""
+        },
+        {
+            ""id"": ""16"",
+            ""host"": ""svl-hpr2--lax-hpr2-10g.cenic.net"",
+            ""ip"": ""137.164.25.38"",
+            ""rtt1"": ""92.759"",
+            ""rtt2"": ""94.533"",
+            ""rtt3"": ""96.527""
+        },
+        {
+            ""id"": ""17"",
+            ""host"": ""hpr-ucb--svl-hpr-10g.cenic.net"",
+            ""ip"": ""137.164.27.133"",
+            ""rtt1"": ""96.786"",
+            ""rtt2"": ""97.536"",
+            ""rtt3"": ""98.007""
+        },
+        {
+            ""id"": ""18"",
+            ""host"": ""t1-3.inr-202-reccev.Berkeley.EDU"",
+            ""ip"": ""128.32.0.67"",
+            ""rtt1"": ""91.968"",
+            ""rtt2"": ""94.792"",
+            ""rtt3"": ""96.678""
+        },
+        {
+            ""id"": ""19"",
+            ""host"": ""ge-0-0-0.inr-667-sut.Berkeley.EDU"",
+            ""ip"": ""128.32.0.81"",
+            ""rtt1"": ""98.758"",
+            ""rtt2"": ""88.696"",
+            ""rtt3"": ""88.199""
+        },
+        {
+            ""id"": ""20"",
+            ""host"": ""router3-fast1-0-0.ICSI.Berkeley.EDU"",
+            ""ip"": ""169.229.0.138"",
+            ""rtt1"": ""90.972"",
+            ""rtt2"": ""93.542"",
+            ""rtt3"": ""92.695""
+        },
+        {
+            ""id"": ""21"",
+            ""host"": ""router1-vlan5.icsi.berkeley.edu"",
+            ""ip"": ""192.150.187.249"",
+            ""rtt1"": ""94.637"",
+            ""rtt2"": ""99.327"",
+            ""rtt3"": ""98.760""
+        },
+        {
+            ""id"": ""22"",
+            ""host"": ""www.icir.org"",
+            ""ip"": ""192.150.187.12"",
+            ""rtt1"": ""89.365"",
+            ""rtt2"": ""97.828"",
+            ""rtt3"": ""90.886""
+        }
+    ],
+    ""__exposedProps__"": {
+        ""target"": ""r"",
+        ""hop"": ""r""
+    }
+}","{
+    ""domain"": null,
+    ""list"": [
+        ""192.168.1.1""
+    ],
+    ""__exposedProps__"": {
+        ""domain"": ""r"",
+        ""list"": ""r""
+    }
+}","[
+    ""173.194.75.99"",
+    ""173.194.75.106"",
+    ""173.194.75.147"",
+    ""173.194.75.105"",
+    ""173.194.75.103"",
+    ""173.194.75.104""
+]","""2xx"""
+
+b) Firefox error page metrics
+
+SQLite Schema --> "id","testid","uri","cause","interfaces","configuration","auto","routing","traceroute","nameservers","lookup","lookup_cd","lookup_public","lookup_standard","tcp","http","https","user_proxy","proxy_available","http_common"
+
+    id: This is the row id in the database.
+    testid: Each “debug” session is given a unique id to differentiate it from other debug sessions.
+    uri: This is the URI for which Firefox generated the network error page.
+    interfaces: List of available interfaces which are configured. Details include name, MTU, MAC, TX and RX bytes.
+    configuration: This lists the interface name and IP for the configured interfaces.
+    auto: This field indicates if the active interfaces' addresses are auto-configured.
+    routing: This indicates the host's routing configuration.
+    traceroute: Lists the details of a traceroute to an echo server.
+    nameservers: List of the configured resolvers on the host.
+    lookup:  This records the 'A' record for the domain via the configured resolver.
+    lookup_cd:  This records the 'A' record for the domain via the configured resolver by setting the CD option.
+    lookup_public:  This records the ‘A’ record for the domain via a public resolver.
+    lookup_standard:  This records the 'A' record for a standard domain (currently www.google.com) via the configured resolver.
+    tcp: This indicates errors in TCP connectivity to the domain.
+    http: Indicates the HTTP response code for the test to download the HTTP entity body for the domain.
+    https: This test tries to retrieve the certificate chain associated with an HTTPS connection to the domain, if possible.
+    user_proxy: Lists any locally configured proxy servers on the host which might affect connections to the domain.
+    proxy_available: Indicates if a TCP connection can be established to the locally configured proxy server.
+    http_common: Indicates the HTTP response code when retrieving the HTTP entity for a standard URL (currently http://www.google.com) in the presence of a locally configured proxy server.
+
+"18","62isduxh","http: //www.ccscscscscscscscs.com/","dnsNotFound","[
+    {
+        ""address"": {
+            ""ipv4"": ""192.168.1.127"",
+            ""ipv6"": ""fe80: : 21c: bfff: fe0d: 98b/64"",
+            ""broadcast"": ""192.168.1.255"",
+            ""mask"": ""255.255.255.0""
+        },
+        ""name"": ""wlan0"",
+        ""mtu"": ""1500"",
+        ""mac"": ""00: 1c: bf: 0d: 09: 8b"",
+        ""tx"": ""1188156759(1.1GB)"",
+        ""rx"": ""3398328142(3.3GB)""
+    }
+]","""wlan0,
+IP=192.168.1.127""","true","{
+    ""entry"": {
+        ""destination"": [
+            ""192.168.1.0"",
+            ""169.254.0.0"",
+            ""0.0.0.0""
+        ],
+        ""gateway"": [
+            ""0.0.0.0"",
+            ""0.0.0.0"",
+            ""192.168.1.1""
+        ],
+        ""mask"": [
+            ""255.255.255.0"",
+            ""255.255.0.0"",
+            ""0.0.0.0""
+        ],
+        ""interface"": [
+            ""wlan0"",
+            ""wlan0"",
+            ""wlan0""
+        ]
+    },
+    ""defaultEntry"": [
+        {
+            ""gateway"": ""192.168.1.1"",
+            ""interface"": ""wlan0"",
+            ""version"": ""IPv4""
+        }
+    ]
+}","{
+    ""target"": ""192.150.187.12"",
+    ""hop"": [
+        {
+            ""id"": ""1"",
+            ""host"": ""192.168.1.1"",
+            ""ip"": ""192.168.1.1"",
+            ""rtt1"": ""5.185"",
+            ""rtt2"": ""5.172"",
+            ""rtt3"": ""5.227""
+        },
+        {
+            ""id"": ""2"",
+            ""host"": ""vlan44-lcsr-gw.rutgers.edu"",
+            ""ip"": ""165.230.44.65"",
+            ""rtt1"": ""5.518"",
+            ""rtt2"": ""5.928"",
+            ""rtt3"": ""6.012""
+        },
+        {
+            ""id"": ""3"",
+            ""host"": ""172.28.1.33"",
+            ""ip"": ""172.28.1.33"",
+            ""rtt1"": ""5.132"",
+            ""rtt2"": ""5.159"",
+            ""rtt3"": ""5.277""
+        },
+        {
+            ""id"": ""4"",
+            ""host"": ""172.28.6.38"",
+            ""ip"": ""172.28.6.38"",
+            ""rtt1"": ""5.363"",
+            ""rtt2"": ""5.448"",
+            ""rtt3"": ""5.710""
+        },
+        {
+            ""id"": ""5"",
+            ""host"": ""172.28.194.2"",
+            ""ip"": ""172.28.194.2"",
+            ""rtt1"": ""18.465"",
+            ""rtt2"": ""18.983"",
+            ""rtt3"": ""23.489""
+        },
+        {
+            ""id"": ""6"",
+            ""host"": ""172.28.193.89"",
+            ""ip"": ""172.28.193.89"",
+            ""rtt1"": ""28.825"",
+            ""rtt2"": ""14.459"",
+            ""rtt3"": ""14.474""
+        },
+        {
+            ""id"": ""7"",
+            ""host"": ""172.28.193.102"",
+            ""ip"": ""172.28.193.102"",
+            ""rtt1"": ""3.843"",
+            ""rtt2"": ""4.597"",
+            ""rtt3"": ""2.741""
+        },
+        {
+            ""id"": ""8"",
+            ""host"": ""172.28.193.17"",
+            ""ip"": ""172.28.193.17"",
+            ""rtt1"": ""5.117"",
+            ""rtt2"": ""5.186"",
+            ""rtt3"": ""5.211""
+        },
+        {
+            ""id"": ""9"",
+            ""host"": ""216.27.98.93"",
+            ""ip"": ""216.27.98.93"",
+            ""rtt1"": ""4.269"",
+            ""rtt2"": ""4.276"",
+            ""rtt3"": ""4.454""
+        },
+        {
+            ""id"": ""10"",
+            ""host"": ""remote.internet2.magpi.net"",
+            ""ip"": ""216.27.100.54"",
+            ""rtt1"": ""42.203"",
+            ""rtt2"": ""42.284"",
+            ""rtt3"": ""42.458""
+        },
+        {
+            ""id"": ""11"",
+            ""host"": ""*"",
+            ""ip"": ""*"",
+            ""rtt1"": ""*"",
+            ""rtt2"": ""*"",
+            ""rtt3"": ""*""
+        },
+        {
+            ""id"": ""12"",
+            ""host"": ""ae-8.10.rtr.atla.net.internet2.edu"",
+            ""ip"": ""64.57.28.6"",
+            ""rtt1"": ""95.861"",
+            ""rtt2"": ""96.004"",
+            ""rtt3"": ""22.938""
+        },
+        {
+            ""id"": ""13"",
+            ""host"": ""xe-1-0-0.0.rtr.hous.net.internet2.edu"",
+            ""ip"": ""64.57.28.112"",
+            ""rtt1"": ""46.025"",
+            ""rtt2"": ""46.096"",
+            ""rtt3"": ""46.241""
+        },
+        {
+            ""id"": ""14"",
+            ""host"": ""*"",
+            ""ip"": ""*"",
+            ""rtt1"": ""*"",
+            ""rtt2"": ""*"",
+            ""rtt3"": ""*""
+        },
+        {
+            ""id"": ""15"",
+            ""host"": ""hpr-lax-hpr--i2-newnet.cenic.net"",
+            ""ip"": ""137.164.26.133"",
+            ""rtt1"": ""80.618"",
+            ""rtt2"": ""80.714"",
+            ""rtt3"": ""80.828""
+        },
+        {
+            ""id"": ""16"",
+            ""host"": ""svl-hpr2--lax-hpr2-10g.cenic.net"",
+            ""ip"": ""137.164.25.38"",
+            ""rtt1"": ""90.126"",
+            ""rtt2"": ""90.642"",
+            ""rtt3"": ""90.859""
+        },
+        {
+            ""id"": ""17"",
+            ""host"": ""hpr-ucb--svl-hpr-10g.cenic.net"",
+            ""ip"": ""137.164.27.133"",
+            ""rtt1"": ""88.056"",
+            ""rtt2"": ""88.780"",
+            ""rtt3"": ""88.962""
+        },
+        {
+            ""id"": ""18"",
+            ""host"": ""t1-3.inr-202-reccev.Berkeley.EDU"",
+            ""ip"": ""128.32.0.67"",
+            ""rtt1"": ""87.698"",
+            ""rtt2"": ""86.741"",
+            ""rtt3"": ""86.793""
+        },
+        {
+            ""id"": ""19"",
+            ""host"": ""ge-1-3-0.inr-667-sut.Berkeley.EDU"",
+            ""ip"": ""128.32.0.83"",
+            ""rtt1"": ""86.957"",
+            ""rtt2"": ""86.952"",
+            ""rtt3"": ""86.941""
+        },
+        {
+            ""id"": ""20"",
+            ""host"": ""router3-fast1-0-0.ICSI.Berkeley.EDU"",
+            ""ip"": ""169.229.0.138"",
+            ""rtt1"": ""90.928"",
+            ""rtt2"": ""88.944"",
+            ""rtt3"": ""89.050""
+        },
+        {
+            ""id"": ""21"",
+            ""host"": ""router1-vlan5.icsi.berkeley.edu"",
+            ""ip"": ""192.150.187.249"",
+            ""rtt1"": ""91.497"",
+            ""rtt2"": ""91.855"",
+            ""rtt3"": ""97.499""
+        },
+        {
+            ""id"": ""22"",
+            ""host"": ""www.icir.org"",
+            ""ip"": ""192.150.187.12"",
+            ""rtt1"": ""89.679"",
+            ""rtt2"": ""89.614"",
+            ""rtt3"": ""90.804""
+        }
+    ]
+}","{
+    ""domain"": null,
+    ""list"": [
+        ""192.168.1.1""
+    ]
+}","[
+    
+]","[
+    
+]","[
+    
+]","[
+    ""173.194.75.105"",
+    ""173.194.75.106"",
+    ""173.194.75.147"",
+    ""173.194.75.104"",
+    ""173.194.75.99"",
+    ""173.194.75.103""
+]","","","","","",""
+
+ps: Not all tests are initiated as they depend on the network error.
+
+III) Per-page load measurements
+-------------------------------
+
+For each page load, Fathom records the time to load the page, DOMContentLoaded 
+time and the document state, along with per resource characteristics, such as 
+time for DNS resolution, TCP connection time, request-response time (i.e. time 
+from request to first response bytes), send time for request, wait time, time 
+for completion of entire HTTP request, size of the response and content type 
+(only if it is an image, script or flash).
+
+{
+    "load": 740,
+    "domcontentloaded": 234,
+    "httpstart": 1360337133775,
+    "httptotal": 857,
+    "resources": [
+        {
+            "id": 0,
+            "url": "http://www.google.com/",
+            "rrt": 87,
+            "connectFlag": true,
+            "dnsFlag": true,
+            "dnsstart": 1360337133775,
+            "dnsstop": 1360337133780,
+            "connectstart": 1360337133780,
+            "connectstop": 1360337133801,
+            "sendstart": 1360337133801,
+            "sendstop": 1360337133801,
+            "waitstart": 1360337133801,
+            "waitstop": 1360337133862,
+            "httpstart": 1360337133775,
+            "httpstop": 1360337133903,
+            "size": 29024,
+            "contentType": ""
+        },
+        {
+            "id": 1,
+            "url": "http://www.google.com/images/icons/product/chrome-48.png",
+            "rrt": 66,
+            "connectFlag": true,
+            "dnsFlag": true,
+            "dnsstart": 1360337134030,
+            "dnsstop": 1360337134034,
+            "connectstart": 1360337134034,
+            "connectstop": 1360337134062,
+            "sendstart": 1360337134062,
+            "sendstop": 1360337134062,
+            "waitstart": 1360337134062,
+            "waitstop": 1360337134096,
+            "httpstart": 1360337134030,
+            "httpstop": 1360337134097,
+            "size": 1834,
+            "contentType": "img"
+        },
+        {
+            "id": 2,
+            "url": "http://www.google.com/images/srpr/logo3w.png",
+            "rrt": 65,
+            "connectFlag": true,
+            "dnsFlag": true,
+            "dnsstart": 1360337134030,
+            "dnsstop": 1360337134034,
+            "connectstart": 1360337134034,
+            "connectstop": 1360337134062,
+            "sendstart": 1360337134062,
+            "sendstop": 1360337134062,
+            "waitstart": 1360337134062,
+            "waitstop": 1360337134095,
+            "httpstart": 1360337134030,
+            "httpstop": 1360337134125,
+            "size": 7007,
+            "contentType": "img"
+        },
+        {
+            "id": 3,
+            "url": "http://www.google.com/xjs/_/js/s/c,sb,cr,cdos,vm,tbui,mb,wobnm,cfm,klc,kat,aut,esp,bihu,kp,lu,m,rtis,amcl,erh,hv,lc,ob,rsn,sf,sfa,shb,tbpr,hsm,j,p,pcc,csi/rt=j/ver=Aq5WmhhrKu8.en_US./am=CA/d=1/sv=1/rs=AItRSTMMQ7BvcC0xQpJTLE61f2x6UYHVTw",
+            "rrt": 23,
+            "connectFlag": true,
+            "dnsFlag": true,
+            "dnsstart": 0,
+            "dnsstop": 0,
+            "connectstart": 0,
+            "connectstop": 0,
+            "sendstart": 1360337134033,
+            "sendstop": 1360337134033,
+            "waitstart": 1360337134033,
+            "waitstop": 1360337134055,
+            "httpstart": 1360337134032,
+            "httpstop": 1360337134146,
+            "size": 177027,
+            "contentType": "js"
+        },
+        {
+            "id": 4,
+            "url": "http://www.google.com/extern_chrome/43779c7db5414f1f.js",
+            "rrt": 47,
+            "connectFlag": true,
+            "dnsFlag": true,
+            "dnsstart": 0,
+            "dnsstop": 0,
+            "connectstart": 0,
+            "connectstop": 0,
+            "sendstart": 1360337134428,
+            "sendstop": 1360337134428,
+            "waitstart": 1360337134428,
+            "waitstop": 1360337134475,
+            "httpstart": 1360337134428,
+            "httpstop": 1360337134484,
+            "size": 20558,
+            "contentType": "js"
+        },
+        {
+            "id": 5,
+            "url": "http://www.google.com/xjs/_/js/s/sy16,gf,tng,sy61,sy49,sy64,sy50,sy95,sy5,sy14,sy44,sy4,sy94,sy107,sy108,sy6,sy120,sy15,sy21,mbtt,ifl,ssi/rt=j/ver=Aq5WmhhrKu8.en_US./am=CA/d=0/sv=1/rs=AItRSTMMQ7BvcC0xQpJTLE61f2x6UYHVTw",
+            "rrt": 20,
+            "connectFlag": true,
+            "dnsFlag": true,
+            "dnsstart": 0,
+            "dnsstop": 0,
+            "connectstart": 0,
+            "connectstop": 0,
+            "sendstart": 1360337134428,
+            "sendstop": 1360337134428,
+            "waitstart": 1360337134428,
+            "waitstop": 1360337134448,
+            "httpstart": 1360337134428,
+            "httpstop": 1360337134469,
+            "size": 17752,
+            "contentType": "js"
+        },
+        {
+            "id": 6,
+            "url": "http://www.google.com/textinputassistant/tia.png",
+            "rrt": 46,
+            "connectFlag": true,
+            "dnsFlag": true,
+            "dnsstart": 1360337134428,
+            "dnsstop": 1360337134432,
+            "connectstart": 1360337134432,
+            "connectstop": 1360337134452,
+            "sendstart": 1360337134452,
+            "sendstop": 1360337134452,
+            "waitstart": 1360337134452,
+            "waitstop": 1360337134474,
+            "httpstart": 1360337134428,
+            "httpstop": 1360337134474,
+            "size": 387,
+            "contentType": "img"
+        },
+        {
+            "id": 7,
+            "url": "http://www.google.com/images/nav_logo117.png",
+            "rrt": 62,
+            "connectFlag": true,
+            "dnsFlag": true,
+            "dnsstart": 1360337134528,
+            "dnsstop": 1360337134535,
+            "connectstart": 1360337134535,
+            "connectstop": 1360337134557,
+            "sendstart": 1360337134557,
+            "sendstop": 1360337134557,
+            "waitstart": 1360337134557,
+            "waitstop": 1360337134590,
+            "httpstart": 1360337134528,
+            "httpstop": 1360337134632,
+            "size": 25052,
+            "contentType": "img"
+        },
+        {
+            "id": 8,
+            "url": "http://www.google.com/csi?v=3&s=webhp&action=&e=17259,39523,4000116,4000605,4001569,4001947,4001959,4001975,4002001,4002159,4002436,4002562,4002855,4002858,4002928,4003053,4003178,4003190,4003320,4003335,4003372,4003373,4003386,4003391,4003392,4003489,4003495,4003575,4003640,4003691,4003722,4003801,4003913,4003944,4003984,4004015&ei=7RgVUe7QMYPV0gH-iYCoCg&imc=2&imn=2&imp=2&atyp=csi&adh=&rt=xjsls.87,prt.97,xjses.377,xjsee.484,xjs.501,ol.628,iml.238,wsrt.128,cst.22,dnst.0,rqst.102,rspt.42",
+            "rrt": 57,
+            "connectFlag": true,
+            "dnsFlag": true,
+            "dnsstart": 1360337134537,
+            "dnsstop": 1360337134543,
+            "connectstart": 1360337134543,
+            "connectstop": 1360337134562,
+            "sendstart": 1360337134562,
+            "sendstop": 1360337134562,
+            "waitstart": 1360337134562,
+            "waitstop": 1360337134594,
+            "httpstart": 1360337134537,
+            "httpstop": 1360337134594,
+            "size": 0,
+            "contentType": "img"
+        }
+    ],
+    "ts": 1360337133766,
+    "documentstate": "complete"
+}

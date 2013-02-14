@@ -1,0 +1,34 @@
+.wordwrap { 
+   white-space: pre-wrap;      /* CSS3 */   
+   white-space: -moz-pre-wrap; /* Firefox */    
+   white-space: -pre-wrap;     /* Opera <7 */   
+   white-space: -o-pre-wrap;   /* Opera 7 */    
+   word-wrap: break-word;      /* IE */
+}
+
+div#pop-up {
+	display: none;
+	position:absolute;
+	color: white;
+	font-size: 12px;
+	background: rgba(0,0,0,0.5);
+	padding: 5px 10px 5px 10px;
+	-moz-border-radius: 5px 5px;
+	border-radius: 5px 5px;
+}
+div#pop-up-title {
+	font-size: 12px;
+	width:200px;
+	margin-bottom: 4px;
+	font-weight: bolder;
+}
+div#pop-up-content {
+	font-size: 10px;
+}
+div#pop-desc {
+	width: 200px;
+}
+div#pop-img {
+	font-size: 30px;
+	font-weight: bolder;
+}

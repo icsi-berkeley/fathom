@@ -1,0 +1,105 @@
+<?xml version="1.0"?>
+<!--
+ * ***** BEGIN LICENSE BLOCK *****
+ *
+ * Copyright (c) 2011-2012 International Computer Science Institute (ICSI).
+ * All rights reserved.
+ *
+ * See LICENSE for license and terms of usage. 
+ *
+ * ***** END LICENSE BLOCK *****
+-->
+<!DOCTYPE overlay SYSTEM "chrome://fathom/locale/fathom.dtd">
+
+<?xml-stylesheet href="chrome://fathom/skin/fathom.css" type="text/css"?>
+
+<overlay xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+  id="fathomOverlay">
+
+	<stringbundleset id="stringbundleset">
+		<stringbundle id="fathomStrings" src="chrome://fathom/locale/fathom.properties"/>
+	</stringbundleset>
+
+	<script type="application/x-javascript" src="buildinfo.js" />
+	<script type="application/x-javascript" src="overlay.js" />
+	<script type="application/x-javascript" src="systemmeasurements.js" />
+	<script type="application/x-javascript" src="httpmeasurements.js" />
+	<script type='application/x-javascript'	src='netError.js' />
+	<script type='application/x-javascript'	src='upload.js' />
+
+	<script>
+		function fathom_debug() {
+			gBrowser.selectedTab = gBrowser.addTab("chrome://fathom/content/debug_my_connection.html");
+		}
+		
+		function fathom_upload() {
+			var files = ["system", "wifi", "traffic", "browserMemory", "endhost"];
+			for(var i in files) {
+				setTimeout(function() {
+					upload.file("baseline_" + files[i] + ".sqlite");
+				}, 1000);
+			}
+		}
+	</script>
+  
+	<!-- Toolbar -->
+	<toolbarpalette id="BrowserToolbarPalette">
+		<toolbarbutton id="toolbar-fathom-button" label="Fathom" type="menu-button" class="toolbarbutton-1" image="chrome://fathom/content/icons/on.png" tooltiptext="Fathom" onclick="fathom_helpers.onIconClick(event);" onpopupshowing="fathom_helpers.onPopUpShowing(event, 'toolbar-');">
+			
+			<menupopup id="toolbar-fathom-clipmenu" sizetopopup="none" onpopupshowing="fathom_helpers.onPopUpShowing(event, 'toolbar-');">
+				<menuitem id="toolbar-fathom-disable" label="Disable Fathom" type="checkbox" autocheck="false" checked="false" onmouseup="fathom_helpers.onMenuItemCommand(event, 'toggle', 'toolbar-');"/>
+				<menuitem id="fathom-debug" label="Debug my connection" onclick="fathom_debug();"/>
+				<menuitem id="toolbar-fathom-upload" label="Upload Data" onclick="fathom_upload();"/>
+				<menuseparator id="toolbar-fathom-enable_disable" />
+
+				<menuitem id="toolbar-fathom-bug" label="Send bug report" onmouseup="fathom_helpers.onMenuItemCommand(event, 'bugreport', 'toolbar-');"/>
+				<menuitem id="toolbar-fathom-about" label="About Fathom" onmouseup="fathom_helpers.onMenuItemCommand(event, 'about', 'toolbar-');"/>
+				<menuseparator id="toolbar-fathom-abt" />
+
+				<menuitem id="toolbar-fathom-version" label="Build : "/>
+			</menupopup>
+
+		</toolbarbutton>
+	</toolbarpalette>
+
+	<!-- Tools menu -->
+	<menupopup id="menu_ToolsPopup">
+		<menu id="tools-fathom-menuitem" label="Fathom">
+
+			<menupopup id="tools-fathom-clipmenu" sizetopopup="none" onpopupshowing="fathom_helpers.onPopUpShowing(event, 'tools-');">
+				<menuitem id="tools-fathom-disable" label="Disable Fathom" type="checkbox" autocheck="false" checked="false" oncommand="fathom_helpers.onMenuItemCommand(event, 'toggle', 'tools-');"/>
+				<menuitem id="fathom-debug" label="Debug my connection" oncommand="fathom_debug();"/>
+				<menuitem id="tools-fathom-upload" label="Upload Data" onclick="fathom_upload();"/>
+				<menuseparator id="tools-fathom-enable_disable" />
+
+				<menuitem id="tools-fathom-bug" label="Send bug report" oncommand="fathom_helpers.onMenuItemCommand(event, 'bugreport', 'tools-');"/>
+				<menuitem id="tools-fathom-about" label="About Fathom" oncommand="fathom_helpers.onMenuItemCommand(event, 'about', 'tools-');"/>
+				<menuseparator id="tools-fathom-abt" />
+
+				<menuitem id="tools-fathom-version" label="Build : "/>
+			</menupopup>
+
+		</menu>
+	</menupopup>
+
+	<!-- Status bar -->
+	<statusbar id="status-bar" >
+
+		<menupopup id="fathom-clipmenu" sizetopopup="none" onpopupshowing="fathom_helpers.onPopUpShowing(event, '');">
+			<menuitem id="fathom-disable" label="Disable Fathom" type="checkbox" autocheck="false" checked="false" onmouseup="fathom_helpers.onMenuItemCommand(event, 'toggle', '');"/>
+			<menuitem id="fathom-debug" label="Debug my connection" onclick="fathom_debug();"/>
+			<menuitem id="fathom-upload" label="Upload Data" onclick="fathom_upload();"/>
+			<menuseparator id="fathom-enable_disable" />
+
+			<menuitem id="fathom-bug" label="Send bug report" onmouseup="fathom_helpers.onMenuItemCommand(event, 'bugreport', '');"/>
+			<menuitem id="fathom-about" label="About Fathom" onmouseup="fathom_helpers.onMenuItemCommand(event, 'about', '');"/>
+			<menuseparator id="fathom-abt" />
+
+			<menuitem id="fathom-version" label="Build : "/>
+		</menupopup>
+
+  		<statusbarpanel id="fathom-icon" class="statusbarpanel-iconic" src="chrome://fathom/content/icons/on.png" popup="fathom-clipmenu" context="fathom-clipmenu" tooltiptext="Fathom" onclick="fathom_helpers.onIconClick(event);"/>
+  	
+	</statusbar>
+
+</overlay>

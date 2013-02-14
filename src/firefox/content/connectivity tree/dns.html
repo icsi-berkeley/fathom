@@ -1,0 +1,83 @@
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	</head>
+	<body>
+		<link rel="stylesheet" type="text/css" href="ui/css/spinner.css" />
+		<!-- borrowing the Netalyzr UI -->
+		<link rel="stylesheet" type="text/css" href="ui/css/netalyzr.css" />
+		<script type="text/javascript" src="http://netalyzr.icsi.berkeley.edu/collapse.js"></script>
+		
+		<!-- jquery scripts -->
+		<script src="ui/libs/jquery/jquery-1.7.2.js"></script>
+
+		<!-- results DIV -->
+		<div class="result" id="result" overflow:auto></div>
+
+		<!-- initialization -->
+		<script src="utils/display.js"></script>
+		<script src="utils/log.js"></script>
+		<script src="utils/base.js"></script>
+		<script src="utils/new_tree.js"></script>
+		<script src="utils/init.js"></script>
+
+		<!-- helper scripts -->
+		<script src="tests/http/dns/lookup.js"></script>
+		<script src="tests/http/uri.js"></script>
+
+		<script>
+			var path = "tests/dns/";
+
+			var manifest = {
+				'api' : [
+					'socket.*',
+					'proto.*',
+					'system.*',
+					'util.*',
+				],
+				'destinations' : [
+					''
+				]
+			};
+			window.fathom.init(function(arg) { }, manifest, window);
+
+			/* globals */
+			var DNSserver = null;
+			var domainName = null;
+			var standardName = "www.google.com";
+
+			function runDNSTests(testDomain, dnsserver) {
+				domainName = testDomain;
+
+				DNSserver = dnsserver;
+
+				/* load the tests */
+				var nameserver = loadTest(path + "nameserver.js");
+				var lookup_host = loadTest(path + "lookup_host.js");
+				var lookup_host_cd = loadTest(path + "lookup_host_cd.js");
+				var lookup_public = loadTest(path + "lookup_public.js");
+				var lookup_standard = loadTest(path + "lookup_standard.js");
+
+				/* create the test tree */
+				var tree = new Tree();
+
+				var t0 = new nameserver();
+				var t1 = tree.addChild(t0, new lookup_host());
+				var t2 = tree.addChild(t1, new lookup_host_cd());
+				var t3 = tree.addChild(t2, new lookup_public());
+				var t4 = tree.addChild(t3, new lookup_standard());
+
+				/* add the visualization */
+				var vis = visualize("DNS Analysis", tree.toJSON());
+
+				/* execute the tests */
+				tree.traverse();
+
+				/* delete tree to prevent memory leaks */
+				delete tree;
+			}
+
+			runDNSTests("www.dnssec-failed.org", "149.20.64.20");
+		</script>
+	</body>
+</html>

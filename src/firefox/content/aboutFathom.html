@@ -1,0 +1,170 @@
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+		<title>about:fathom</title>
+	</head>
+	<body>
+		<link rel="stylesheet" type="text/css" href="chrome://fathom/content/connectivity tree/ui/css/spinner.css" />
+		<link rel="stylesheet" type="text/css" href="chrome://fathom/content/connectivity tree/ui/css/pop-up.css" />
+		<link rel="stylesheet" type="text/css" href="chrome://fathom/content/connectivity tree/ui/css/node.css" />
+		<link rel="stylesheet" type="text/css" href="chrome://fathom/content/connectivity tree/ui/css/netalyzr.css" />
+		<link rel="stylesheet" type="text/css" href="chrome://fathom/content/connectivity tree/ui/css/table.css" />
+		
+		
+		<script src="chrome://fathom/content/connectivity tree/ui/libs/jquery/jquery-1.7.2.js"></script>
+		<script src="chrome://fathom/content/connectivity tree/ui/libs/d3.v2.js"></script>
+
+		<script type="text/javascript" src="chrome://fathom/content/connectivity tree/utils/collapse.js"></script>
+		<script type="text/javascript" src="chrome://fathom/content/connectivity tree/utils/display.js"></script>
+		<script type="text/javascript" src="chrome://fathom/content/connectivity tree/utils/collapse.js"></script>
+		<script type="text/javascript" src="chrome://fathom/content/connectivity tree/utils/visualization.js"></script>
+
+		<link href="chrome://fathom/content/graphs/css/layout.css" rel="stylesheet" type="text/css">
+		<script language="javascript" type="text/javascript" src="chrome://fathom/content/graphs/libs/jquery.flot.js"></script>
+		<script language="javascript" type="text/javascript" src="chrome://fathom/content/graphs/libs/jquery.flot.navigate.js"></script>
+		<script language="javascript" type="text/javascript" src="chrome://fathom/content/graphs/libs/jquery.lightbox_me.js"></script>
+
+		<!--div id="history">
+			<table>
+				<thead>
+					<tr>
+						<th>Report ID</th>
+						<th>Date Submitted</th>
+					</tr>
+				</thead>
+				<tbody id="tbody">
+				</tbody>
+			</table>
+		</div-->
+
+		<div class="allinone" id="allinone" style="display:none;">
+			<!--div class="wrapper">
+				<button class="button" onclick="update();">Update</button>
+			</div-->
+			<div class="result" id="result" style="overflow:auto"></div>
+			<div id="trees">
+				<div id="result0" style="overflow:auto"></div>
+				<div id="result1" style="overflow:auto"></div>
+				<div id="result2" style="overflow:auto"></div>
+			</div>
+			<div id="pop-up"></div>
+			<div id="sessionHistory"></div>
+		</div>
+		
+		<!-- accordion and other supporting css directives are not supported yet -->
+		<div class="accordion" id="passive">
+			<h3 class="collapsible" id="system"><a href="#">System</a><h3>
+			<div class="container">
+				<div class="heading">Tasks</div>
+				<div id="tasks" style="width:400px;height:200px;"></div>
+				<div class="heading">CPU</div>
+				<div id="cpu" style="width:400px;height:200px;"></div>
+				<div class="heading">Memory</div>
+				<div id="memory" style="width:400px;height:200px;"></div>
+			</div>
+			<h3 class="collapsible" id="traffic"><a href="#">Traffic</a><h3>
+			<div class="container">
+				<div class="content">
+					<div class="heading">Network Traffic</div>
+					<div id="traffic_network" style="width:400px;height:200px;"></div>
+					<div class="heading">HTTP Traffic</div>
+					<div id="traffic_http" style="width:400px;height:200px;"></div>
+				</div>
+			</div>
+			<h3 class="collapsible" id="wi-fi"><a href="#">Wi-Fi</a><h3>
+			<div class="container">
+				<div class="content">
+					<div class="heading">Wi-Fi</div>
+					<div id="wifi" style="width:400px;height:200px;"></div>
+				</div>
+			</div>
+			<h3 class="collapsible" id="ffxMem"><a href="#">Firefox Memory</a><h3>
+			<div class="container">
+				<div class="content">
+					<div class="heading">Firefox Memory</div>
+					<div id="ffxMemory" style="width:400px;height:200px;"></div>
+				</div>
+			</div>
+		</div>
+
+		<!--script>
+			(function display_history() {
+				var scope = {};
+				Components.utils.import("resource://fathom/storage.jsm", scope);
+				var list = scope.fathomDataStore.list;
+				var parent = document.getElementById("tbody");
+				for(var i in list) {
+					var tr = document.createElement("tr");
+					var td1 = document.createElement("td");
+					var td2 = document.createElement("td");
+					td1.innerHTML = "<a href='' onclick=\"update('" + i + "')\">" + i + "</a>";
+					td2.innerHTML = list[i].split("GMT")[0];
+					td1.style = "float: left;";
+					td2.style = "float: right;";
+					tr.appendChild(td1);
+					tr.appendChild(td2);
+					parent.appendChild(tr);
+				}
+			})();
+
+			function update(id) {
+				$('#allinone').hide();
+				$("#allinone").lightbox_me();
+				
+				var localStore_html = {};
+				var localStore_json = {};
+			
+				$('div[id^="result"]').empty();
+				var scope = {};
+				Components.utils.import("resource://fathom/storage.jsm", scope);
+				var store = scope.fathomDataStore;
+				for(var i in store.storage) {
+					var tmp = i.split("=#@#=");
+					var loc = null;
+					if(tmp[0] == "json" && tmp[2] == id) {
+						num = tmp[1];
+						loc = tmp[2];
+						if(!localStore_json[loc])
+							localStore_json[loc] = [];
+						localStore_json[loc].push([num, store.storage[i]]);
+					} else if(tmp[0] == "html" && tmp[1] == id) {
+						loc = tmp[1];
+						localStore_html[loc] = store.storage[i];
+					}
+				}
+				
+				for(var i in localStore_html)
+					$("#result").html(localStore_html[i]);
+				
+				for(var i in localStore_json) {
+					var item = localStore_json[i];
+					for(var j = 0; j < item.length; j++) {
+						var json = updateJSON(item[j][0], item[j][1]);
+						display(JSON.stringify(json), "result" + j);
+					}
+				}
+				
+				(function loadSessionHistory(url) {
+					// get the dom storage for the url
+					Components.utils.import("resource://gre/modules/Services.jsm");
+					var uri = Services.io.newURI(url, null, null);
+					var principal = Services.scriptSecurityManager.getCodebasePrincipal(uri);
+					var sm = Services.domStorageManager;
+					var storage = sm.getLocalStorageForPrincipal(principal, "");
+					// TODO: Format it properly
+					var session = storage.getItem('session');
+					if(session == "" || session == null)
+						session = "N/A";
+					$("#sessionHistory").html("<p> Prior Successful Session Baselines </p><br>" + session);
+				})(id);
+				
+				$('#allinone').show();
+			}
+		</script-->
+		<script language="javascript" type="text/javascript" src="chrome://fathom/content/graphs/scripts/plot.js"></script>
+		<script language="javascript" type="text/javascript" src="chrome://fathom/content/graphs/scripts/systemData.js"></script>
+		<script language="javascript" type="text/javascript" src="chrome://fathom/content/graphs/scripts/traffic.js"></script>
+		<script language="javascript" type="text/javascript" src="chrome://fathom/content/graphs/scripts/wifi.js"></script>
+		<script language="javascript" type="text/javascript" src="chrome://fathom/content/graphs/scripts/ffxMemory.js"></script>
+	</body>
+</html>

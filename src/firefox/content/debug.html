@@ -1,0 +1,232 @@
+<!--
+ * ***** BEGIN LICENSE BLOCK *****
+ *
+ * Copyright (c) 2011-2012 International Computer Science Institute (ICSI).
+ * All rights reserved.
+ *
+ * See LICENSE for license and terms of usage. 
+ *
+ * ***** END LICENSE BLOCK *****
+-->
+<html>
+<head>
+</head>
+<body>
+<style type="text/css">
+table.gridtable {
+	font-family: verdana,arial,sans-serif;
+	font-size:11px;
+	color:#333333;
+	border-width: 1px;
+	border-color: #666666;
+	border-collapse: collapse;
+}
+table.gridtable th {
+	border-width: 1px;
+	padding: 8px;
+	border-style: solid;
+	border-color: #666666;
+	background-color: #dedede;
+}
+table.gridtable td {
+	border-width: 1px;
+	padding: 8px;
+	border-style: solid;
+	border-color: #666666;
+	background-color: #ffffff;
+}
+div {
+	font-family: verdana,arial,sans-serif;
+	font-size:11px;
+	color:#333333;
+}
+</style>
+<br>
+<center>
+<table id="t1" class="gridtable">
+<tr>
+	<th>Test</th><th>Result</th><th>Status</th>
+</tr>
+<tr>
+	<td>Interface</td><td id="interface"></td><td id="interface_status"></td>
+</tr>
+<tr>
+	<td rowspan="2">Reachability</td><td id="dns"></td><td id="dns_status"></td>
+</tr>
+<tr>
+	<td id="server"></td><td id="server_status"></td>
+</tr>
+<tr>
+	<td>Wifi</td><td id="wifi"></td><td id="wifi_status"></td>
+</tr>
+<tr>
+	<td>Proxy</td><td id="proxy"></td><td id="proxy_status"></td>
+</tr>
+<tr>
+	<td rowspan="3">System</td><td id="system_cpu"></td><td id="system_cpu_status"></td>
+</tr>
+<tr>
+	<td id="system_memory"></td><td id="system_memory_status"></td>
+</tr>
+<tr>
+	<td id="system_task"></td><td id="system_task_status"></td>
+</tr>
+<tr>
+	<td rowspan="2">Network Traffic</td><td id="tx_traffic"></td><td id="tx_traffic_status"></td>
+</tr>
+<tr>
+	<td id="rx_traffic"></td><td id="rx_traffic_status"></td>
+</tr>
+<tr>
+	<td>Firefox memory</td><td id="ffx_memory"></td><td id="ffx_memory_status"></td>
+</tr>
+</table>
+<br>
+<div id="comment"></div>
+<br>
+<div id="legend">
+<div><img src='icons/tick.png'> Favorably affects network connectivity. </div>
+<div><img src='icons/cross.png'> Definitely hampers network connectivity. </div>
+<div><img src='icons/question.png'> May affect network connectivity. </div>
+</div>
+</center>
+<script>
+
+var manifest = {
+  'api' : [
+	'proto.*',
+	'system.*',
+	'util.*',
+  ],
+  'destinations' : [
+  	''
+  ]
+};
+
+window.fathom.init(function(arg) { }, manifest, window );
+
+function addSpinner(id) {
+	var target = document.getElementById(id);
+	target.innerHTML = "<center><img src='icons/loader.gif'></center>"
+}
+addSpinner("interface");
+addSpinner("dns");
+addSpinner("server");
+addSpinner("wifi");
+addSpinner("proxy");
+addSpinner("system_cpu");
+addSpinner("system_memory");
+addSpinner("system_task");
+addSpinner("tx_traffic");
+addSpinner("rx_traffic");
+addSpinner("ffx_memory");
+</script>
+<script>
+	var currentSession = null;
+	var DOMContentLoadedFired = true;
+	var loadFired = false;
+	var loadTime = null;
+  	var debug_write = "";
+
+	function log(msg, id, verdict) {
+		//debug_write += msg + "\n";
+		var elm = document.getElementById(id);
+		elm.innerHTML = msg;
+
+		if(id == "comment")
+			return;
+
+		var node = document.getElementById(id + "_status");
+		if(verdict == 1)
+			node.innerHTML = "<center><img src='icons/tick.png'></center>";
+		else if(verdict == -1)
+			node.innerHTML = "<center><img src='icons/cross.png'></center>";
+		else
+			node.innerHTML = "<center><img src='icons/question.png'></center>";
+	}
+</script>
+<script type="application/x-javascript" src="chrome://fathom/content/chrome_utils.js"></script>
+<script>
+function fathom_debug(fathom_win, test_win) {
+
+	var threshold = 2;
+	/*
+	 * First load the baseline web session stats, system performance and http stats.
+	 */
+	if (DOMContentLoadedFired) {
+		if (loadFired) { 
+			/* 
+			 * If load fired, then check if the load time is greater, less or 
+			 * comparable to the baseline load time 
+			 */
+		    var sessionHistory = avg_stddev_session(test_win, test_win.localStorage.session, threshold);
+		    if (1 * loadTime > (1 * sessionHistory.mean.load + 1 * threshold * sessionHistory.stddev.load)) { 
+				/* 
+				 * Load time is greater than baseline load time 
+				 */
+		        log("Load time is much larger than usual. Checking the data download time now.", "comment");
+		        var s = JSON.parse(test_win.localStorage.session);
+		        currentSession = s[s.length - 1];
+		        var ddt = currentSession.httptotal;
+		        var range = {
+		        	max : 1*sessionHistory.mean.httptotal + 1*threshold*sessionHistory.stddev.httptotal,
+		        	min : 1*sessionHistory.mean.httptotal - 1*threshold*sessionHistory.stddev.httptotal
+		        }
+		        log("Total download time is " + ddt + " :: range.max = " + range.max, "comment");
+		        if (ddt > range.max) { /* * Data download time is greater than baseline download time */
+		            log("Data download time is > usual time.");
+		            commonTest(currentSession, s, threshold, ddt);
+		        } else { 
+					/* 
+					 * Data download time is comparable to the baseline download time 
+					 */
+		            log("Data download time is comparable to usual time.\nThe issue could be with the host itself", "comment");
+		            TestHost(threshold, 30000);
+		        }
+		    } else if (1 * loadTime > (1 * sessionHistory.mean.load - 1 * threshold * sessionHistory.stddev.load)) { 
+				/* 
+				 * Load time is comparable to the baseline load time 
+				 */
+		        log("Everything is normal.\n" + "Load time = " + loadTime + "\nmean load = " + sessionHistory.mean.load + "\nstddev = " + sessionHistory.stddev.load, "comment");
+		        log(loadTime + " :: " + (1 * sessionHistory.mean.load + 1 * threshold * sessionHistory.stddev.load), "comment");
+		    } else {
+		    	/* 
+				 * Load time is less than baseline load time 
+				 */
+		        log("This is a metric failure.\nThe page loaded too fast(" + loadTime + " ms). This could be due to caching or faster network data rates.", "comment");
+		    }
+		} else { 
+			/* 
+			 * If load did not fire, then check if the elapsed time is greater, 
+			 * less or comparable to the baseline load time 
+			 */
+			try {
+				var s = JSON.parse(test_win.localStorage.session);
+				if(s) {
+					currentSession = s[s.length - 1];
+					var elapsedTime = Date.now() - currentSession.httpstart;
+					log("load not fired : elapsed time = " + elapsedTime, "comment");
+				}
+		    } catch (e) {
+		    }
+		    TestNetwork(fathom_win, test_win, threshold);
+		} 
+		/* 
+		 * If the elapsed time is greater or equal to normal load time, then
+		 * check if the load event has fired or not. If the elapsed time is less
+		 * than the load time, then also check if load has fired or not.
+		 */
+	} else { 
+		/*
+		 * DOMContentLoadedFired always fires, even in the case of complete web access failure
+		 */
+		log("Must never reach this point!\nDOM is taking too long to be built perhaps due to a buggy script.", "comment");
+	}
+}
+
+var Application = Components.classes["@mozilla.org/fuel/application;1"].getService(Components.interfaces.fuelIApplication);
+var win = Application.storage.get("fathom_win", null);
+fathom_debug(window, win);
+</script>
+</body>
+</html>

@@ -1,0 +1,57 @@
+<?xml version="1.0" ?>
+<!--
+ * ***** BEGIN LICENSE BLOCK *****
+ *
+ * Copyright (c) 2011-2012 International Computer Science Institute (ICSI).
+ * All rights reserved.
+ *
+ * See LICENSE for license and terms of usage. 
+ *
+ * ***** END LICENSE BLOCK *****
+-->
+<project name="fathom" default="dist">
+	<property name="src.dir" value="." />
+	<property name="dist.dir" value="../../site/live/downloads" />
+	<property name="app.name" value="fathom" />
+	<property name="app.id" value="fathom@icir.org" />
+	<!-- extension id like: xxx@xxx.com -->
+	<property name="ff.dir" value="" />
+
+	<condition property="ff.present">
+		<and>
+			<isset property="ff.dir" />
+			<available file="${ff.dir}" type="dir" />
+		</and>
+	</condition>
+
+	<target name="dist">
+		<copy file="chrome.manifest.packaging" tofile="chrome.manifest" overwrite="true" />
+		<delete file="${dist.dir}/${app.name}.xpi" />
+		<zip destfile="${dist.dir}/${app.name}.xpi">
+			<fileset dir="${src.dir}">
+				<include name="LICENSE" />
+				<include name="chrome.manifest" />
+				<include name="install.rdf" />
+				<include name="components/**" />
+				<include name="defaults/**" />
+				<include name="modules/**" />
+				<exclude name="**/Makefile" />
+				<exclude name="**/.*" />
+				<exclude name="**/CVS/**" />
+				<exclude name="**/Copy *" />
+				<exclude name="**/*.bak" />
+				<exclude name="**/*.orig" />
+				<exclude name="**/*.in" />
+				<include name="content/**" />
+				<include name="locale/**" />
+				<include name="skin/**" />				
+			</fileset>
+		</zip>
+		<copy file="chrome.manifest.devel" tofile="chrome.manifest" overwrite="true" />
+	</target>
+
+	<exec executable="/bin/bash">
+		<arg value="version.sh"/>
+	</exec>
+
+</project>

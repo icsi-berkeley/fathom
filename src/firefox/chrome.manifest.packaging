@@ -1,0 +1,28 @@
+content    fathom    content/  contentaccessible=yes
+resource   fathom    modules/
+skin       fathom    classic/1.0    skin/
+
+locale     fathom    en-US          locale/en-US/
+
+#style      chrome://global/content/customizeToolbar.xul            chrome://fathom/skin/fathom.css
+
+# Firefox/Fennec
+overlay    chrome://browser/content/browser.xul                    chrome://fathom/content/overlay-firefox.xul	application={ec8030f7-c20a-464f-9b0e-13a3a9e97384}
+overlay    chrome://browser/content/browser.xul                    chrome://fathom/content/overlay-fennec.xul	application={aa3c5121-dab2-40e2-81ca-7ea25febc110}
+# Seamonkey
+overlay    chrome://navigator/content/navigatorOverlay.xul         chrome://fathom/content/overlay.xul
+
+component {0e524489-5086-4791-b0c8-99fd7f3f76be} components/fathom.js
+contract @icir.org/fathom-service;1 {0e524489-5086-4791-b0c8-99fd7f3f76be}
+category profile-after-change FathomService @icir.org/fathom-service;1
+interfaces components/nsIFathom.xpt
+
+component {b5f42951-9a05-47ee-8fa8-bb7a16e48335} components/fathom.js
+contract @icir.org/fathom-api;1 {b5f42951-9a05-47ee-8fa8-bb7a16e48335}
+category JavaScript-global-property fathom @icir.org/fathom-api;1
+
+component {4f149100-811a-4243-9acb-393a56e5f55a} components/fathom.js
+contract @icir.org/fathom-workerutils;1 {4f149100-811a-4243-9acb-393a56e5f55a}
+
+component {e3cec815-a8ae-4826-9963-c7516e988de9} components/aboutFathom.js
+contract @mozilla.org/network/protocol/about;1?what=fathom {e3cec815-a8ae-4826-9963-c7516e988de9}

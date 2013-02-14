@@ -1,0 +1,15 @@
+<!--
+ * ***** BEGIN LICENSE BLOCK *****
+ *
+ * Copyright (c) 2011-2012 International Computer Science Institute (ICSI).
+ * All rights reserved.
+ *
+ * See LICENSE for license and terms of usage. 
+ *
+ * ***** END LICENSE BLOCK *****
+-->
+
+<!ENTITY close.label "Close">
+<!ENTITY title.about "About Fathom">
+<!--ENTITY title.feedback "Feedback">
+<!ENTITY title.options "Options"-->

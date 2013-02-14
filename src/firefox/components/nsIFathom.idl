@@ -1,0 +1,20 @@
+/* -*- mode: javascript; js-indent-level: 2; js-expr-indent-offset: 2; -*-
+ * ***** BEGIN LICENSE BLOCK *****
+ *
+ * Copyright (c) 2011-2012 International Computer Science Institute (ICSI).
+ * All rights reserved.
+ *
+ * See LICENSE for license and terms of usage. 
+ *
+ * ***** END LICENSE BLOCK *****
+ */
+
+#include "nsISupports.idl"
+
+interface nsIPrefBranch;
+
+[scriptable, uuid(0e524489-5086-4791-b0c8-99fd7f3f76be)]
+interface nsIFathom : nsISupports
+{
+  readonly attribute nsIPrefBranch prefs;
+};
