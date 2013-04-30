@@ -12,7 +12,7 @@ API docs [are available](http://fathom.icsi.berkeley.edu/docs/index.html).
 ## Demo code
 As a proof of concept, Fathom currently includes a connectivity debugger that we built purely using Fathom's APIs. You can run the debugger at any time by clicking "Debug my connection" in Fathom's menu. The analysis also automatically kicks in whenever Firefox flags an error to the user:
 
-[Fathom](http://icir.org/christian/proj/fathom/fathom.png)
+![Fathom](http://icir.org/christian/proj/fathom/fathom.png)
 
 ## More information
 Feel free to take a look at our recent [IMC paper on Fathom](http://www.icir.org/christian/publications/2012-imc-fathom.pdf) for a lot more details about the platform.
