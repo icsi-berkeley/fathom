@@ -1018,8 +1018,8 @@ FathomAPI.prototype = {
     var errfile = tmpdir.clone()
     errfile.append('fathom-command.' + commandid + '.err');
 
-    Logger.debug("outfile: " + outfile.path);
-    Logger.debug("errfile: " + errfile.path);
+//    Logger.debug("outfile: " + outfile.path);
+//    Logger.debug("errfile: " + errfile.path);
 
     const fathomapi = this;
 
@@ -1463,7 +1463,7 @@ FathomAPI.prototype = {
 			getLoad: "r",
 			getMemInfo: "r",
 			//getLastKnownInterface: "r",
-			//getEndHostInfo: "r",
+			getEndHostInfo: "r",
 			win: "r"
 		}
       },
