@@ -11,7 +11,7 @@
 				var dIface = null;
 				var ip = null;
 
-				if(outinfo && outinfo.defaultEntry.length) {
+				if(outinfo && outinfo.defaultEntry && outinfo.defaultEntry.length) {
 					dIface = outinfo.defaultEntry[0].interface;
 				}          
 

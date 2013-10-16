@@ -7,7 +7,7 @@
 	
 		//dump("\n\n" + JSON.stringify(info) + "\n\n");
 	
-		var len = info.hop.length;
+		var len = info.hop ? info.hop.length : 0;
 		var res = "fail";
 		var msg = "Not even reached the gateway.";
 		var expdone = false;

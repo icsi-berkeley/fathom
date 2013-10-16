@@ -112,8 +112,7 @@ addEventListener("load", function(event) {
 var pref = Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefBranch);
 var os = Cc["@mozilla.org/xre/app-info;1"].getService(Ci.nsIXULRuntime).OS;
 
-// set the extensions.fathom.installationID
-pref.setCharPref("extensions.fathom.installationID", Math.random().toString(36).slice(-8));
+//var Application = Components.classes["@mozilla.org/fuel/application;1"].getService(Components.interfaces.fuelIApplication);
 
 if(os == "Android") {
 	var fathom_toggleHelpers = {
@@ -226,12 +225,25 @@ if(os == "Android") {
 		  // set icon-image to off
 		  item = document.getElementById("fathom-icon");
 		  if(item)
-		item.setAttribute("image", "chrome://fathom/content/icons/off.png");
+			item.setAttribute("image", "chrome://fathom/content/icons/off.png");
 
 		  item = document.getElementById("toolbar-fathom-button");
 		  if(item)
-		item.setAttribute("image", "chrome://fathom/content/icons/off.png");
+			item.setAttribute("image", "chrome://fathom/content/icons/off.png");
 		}
+
+		(function() {
+			var pref = Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefBranch);
+			var first = pref.getCharPref("extensions.fathom.firstInstall");
+			if (first == "") {
+				// set the extensions.fathom.installationID
+				setTimeout(function() {
+					gBrowser.selectedTab = gBrowser.addTab("chrome://fathom/content/uploadPreferences.html");
+				}, 500);
+				pref.setCharPref("extensions.fathom.firstInstall", "Installed");
+				pref.setCharPref("extensions.fathom.installationID", Math.random().toString(36).slice(-8));
+			}
+		}());
 	  },
 	  
 	  status: function(){
@@ -301,6 +313,48 @@ if(os == "Android") {
 		}
 	  }
 	};
+
+	(function() {
+		var pref = Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefBranch);
+		let listener = {
+		  onUninstalling: function(addon) {
+		    if (addon.id == "fathom@icir.org") {
+			//alert("hello" + "here");
+		      pref.setCharPref("extensions.fathom.firstInstall", "");
+		      pref.setCharPref("extensions.fathom.installationID", "");
+			// also remove the baseline files
+			try{
+				var metrics = ["system", "wifi", "traffic", "browserMemory", "endhost", "debugConnection", "netError"];
+				for(var i in metrics) {
+				  var j = "baseline_" + metrics[i] + ".sqlite";
+				  // remove files
+				  var baselineFile = FileUtils.getFile("ProfD", [j]);
+				  if(baselineFile.exists())
+				    baselineFile.remove(false);
+				}
+			} catch(e) {
+				//alert(e)
+			}
+		    }
+		  },
+		  onOperationCancelled: function(addon) {
+		    if (addon.id == "fathom@icir.org") {
+		      var beingUninstalled = (addon.pendingOperations & AddonManager.PENDING_UNINSTALL) != 0;		      
+			//alert("[[[[" + beingUninstalled + "]]]]");
+		      if (beingUninstalled) {
+			//pref.setCharPref("extensions.fathom.firstInstall", "");
+		      	//pref.setCharPref("extensions.fathom.installationID", "");
+		      }
+		    }
+		  }
+		}
+
+		try {
+		  Components.utils.import("resource://gre/modules/AddonManager.jsm");
+		  AddonManager.addAddonListener(listener);
+		} catch (ex) {}
+
+	}());
 
 	window.addEventListener("load", function(e) { fathom_helpers.onLoad(e); }, false);
 }

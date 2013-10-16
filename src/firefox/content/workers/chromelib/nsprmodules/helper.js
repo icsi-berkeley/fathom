@@ -37,9 +37,12 @@ function getSystemInfo(param) {
   if(!val)
     return "No information found. -- param = " + param;
   NSPR.util.PR_GetSystemInfo(val, info, 256);
+  return info.readString();
+  /*
   for(var tmp = "", i = 0; info[i] != '0'; i++)
     tmp += String.fromCharCode(info[i]);
   return tmp;
+ */
 }
 
 function getHostIP(param, fd) {

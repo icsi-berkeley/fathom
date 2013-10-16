@@ -16,6 +16,11 @@ pref("extensions.fathom.log", true);
 pref("extensions.fathom.log.level", 0);
 pref("extensions.fathom.status", true);
 pref("extensions.fathom.version", "0.2");
-pref("extensions.fathom.build", "774");
+pref("extensions.fathom.build", "");
 
 pref("extensions.fathom.installationID", "");
+
+pref("extensions.fathom.dataUploadPreferences", "");
+pref("extensions.fathom.dataUploadFrequency", 0);
+pref("extensions.fathom.lastAutomaticDataUpload", 0);
+pref("extensions.fathom.firstInstall", "");

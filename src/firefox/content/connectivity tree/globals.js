@@ -28,6 +28,7 @@ var id = setInterval(function() {
 
 // update the tables
 var globalUpdate = function(field, info) {
+
 	var testID = null, table = null;
 	if(DebugTestID) {
 		testID = DebugTestID;
@@ -36,6 +37,7 @@ var globalUpdate = function(field, info) {
 		testID = NetErrorTestID;
 		table = "netError";
 	}
+	
 	var value = JSON.stringify(info);
 	window.fathom.util.updateTables(testID, table, field, value);
 }

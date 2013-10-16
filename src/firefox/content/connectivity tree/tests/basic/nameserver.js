@@ -11,6 +11,8 @@
 		},
 		timeout: 50,
 		cbFunction: function(info) {
+			if(info && !info.list)
+				return;
 			nameserver.test.output = info.list.length ? info : null;
 			if(!nameserver.test.output)
 				nameserver.test.execChildren = false;

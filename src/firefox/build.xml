@@ -11,7 +11,7 @@
 -->
 <project name="fathom" default="dist">
 	<property name="src.dir" value="." />
-	<property name="dist.dir" value="../../site/live/downloads" />
+	<property name="dist.dir" value="./dist" />
 	<property name="app.name" value="fathom" />
 	<property name="app.id" value="fathom@icir.org" />
 	<!-- extension id like: xxx@xxx.com -->

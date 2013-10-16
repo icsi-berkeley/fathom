@@ -115,7 +115,7 @@ function udpSendto(socketid, data, ip, port) {
   return {time: date};
 }
 
-function udpRecv(socketid, length) {
+function udpRecv(socketid, length, timeout) {
   var fd = util.getRegisteredSocket(socketid);
 
   // Practical limit for IPv4 UDP packet data length is 65,507 bytes.
@@ -123,7 +123,7 @@ function udpRecv(socketid, length) {
   var bufsize = 65507;
   var recvbuf = util.getBuffer(bufsize);
   //var addr = new NSPR.types.PRNetAddr();
-  var timeout = NSPR.sockets.PR_INTERVAL_NO_WAIT;
+  var timeout = timeout || NSPR.sockets.PR_INTERVAL_NO_WAIT;
   
   var rv = NSPR.sockets.PR_Recv(fd, recvbuf, bufsize, 0, timeout);
   if (rv == -1) {
@@ -149,15 +149,14 @@ function udpSendrecv(socketid, data, length) {
   return udpRecv(socketid, length);
 }
 
-function udpRecvstart(socketid, length) {
+function udpRecvstart(socketid, length, asstring) {
   util.data.multiresponse_running = true;
-  setTimeout(udpRecvstart_helper, 0, socketid, length);
+  setTimeout(udpRecvstart_helper, 0, socketid, length, asstring);
   return {ignore: true};
 }
 
-function udprecvstart_helper(socketid, length) {
+function udpRecvstart_helper(socketid, length, asstring) {
   var fd = util.getRegisteredSocket(socketid);
-  var requestid = util.data.lastrequestid;
 
   // Practical limit for IPv4 UDP packet data length is 65,507 bytes.
   // (65,535 - 8 byte UDP header - 20 byte IP header)
@@ -173,20 +172,25 @@ function udprecvstart_helper(socketid, length) {
     util.data.multiresponse_running = false;
     util.data.multiresponse_stop = false;
     var result = {done: true, error: 'Network connection is closed'};
-    var obj = {requestid: requestid, result: result};
-    postMessage(JSON.stringify(obj));
+    util.postResult(result);
     return;
   } else {
     var bytesreceived = rv;
+    var out;
+    if (asstring) {
+      // make sure the string terminates at correct place as buffer reused
+      recvbuf[rv] = 0; 
+      out = recvbuf.readString();
+    } else {
     var curlen = length || bytesreceived;
     curlen = Math.min(curlen, bytesreceived);
-    var out = [];
+    out = [];
     for (var i = 0; i < curlen; i++) {
       out.push(recvbuf[i]);
     }
+    }
     var result = {data: out, length: bytesreceived};
-    var obj = {requestid: requestid, result: result};
-    postMessage(JSON.stringify(obj));
+    util.postResult(result);
   }
 
   if (util.data.multiresponse_stop) {
@@ -196,15 +200,15 @@ function udprecvstart_helper(socketid, length) {
     // Including "done : true" in the result indicates to fathom.js that this
     // multiresponse request is finished and can be cleaned up.
     var result = {done: true};
-    var obj = {requestid: requestid, result: result};
-    postMessage(JSON.stringify(obj));
+    util.postResult(result);
     return;
   }
 
   // Rather than use a loop, we schedule this same function to be called again.
   // This enables calls to udprecvstop (and potentially other functions) to
   // be processed.
-  setTimeout(udpRecvstart_helper, 0, socketid, length);
+  setTimeout(udpRecvstart_helper, 0, socketid, length, asstring);
+  return;
 }
 
 function udpRecvstop(socketid) {
@@ -212,6 +216,7 @@ function udpRecvstop(socketid) {
     return {error: 'No multiresponse function is running (nothing to stop).'};
   }
   util.data.multiresponse_stop = true;
+  return {};
 }
 
 function udpRecvfrom(socketid) {
@@ -242,16 +247,14 @@ function udpRecvfrom(socketid) {
   return {data: out, address: ip, port: port};
 }
 
-function udpRecvfromstart(socketid) {
+function udpRecvfromstart(socketid, asstring) {
   util.data.multiresponse_running = true;
-  setTimeout(udpRecvfromstart_helper, 0, socketid);
+  setTimeout(udpRecvfromstart_helper, 0, socketid, asstring);
   return {ignore: true};
 }
 
-function udpRecvfromstart_helper(socketid) {
+function udpRecvfromstart_helper(socketid, asstring) {
   var fd = util.getRegisteredSocket(socketid);
-
-  var requestid = util.data.lastrequestid;
 
   // Practical limit for IPv4 UDP packet data length is 65,507 bytes.
   // (65,535 - 8 byte UDP header - 20 byte IP header)
@@ -269,20 +272,25 @@ function udpRecvfromstart_helper(socketid) {
     util.data.multiresponse_running = false;
     util.data.multiresponse_stop = false;
     var result = {done: true, error: 'Network connection is closed'};
-    var obj = {requestid: requestid, result: result};
-    postMessage(JSON.stringify(obj));
+    util.postResult(result);
     return;
   } else {
     var bytesreceived = rv;
-    var out = [];
+    var out;
+    if (asstring) {
+      // make sure the string terminates at correct place as buffer reused
+      recvbuf[rv] = 0; 
+      out = recvbuf.readString();
+    } else {
+    out = [];
     for (var i = 0; i < bytesreceived; i++) {
       out.push(recvbuf[i]);
+    }
     }
     var port = NSPR.util.PR_ntohs(addr.port);
     var ip = NSPR.util.NetAddrToString(addr);
     var result = {data: out, address: ip, port: port, time: date};
-    var obj = {requestid: requestid, result: result};
-    postMessage(JSON.stringify(obj));
+    util.postResult(result);
   }
 
   if (util.data.multiresponse_stop) {
@@ -292,15 +300,15 @@ function udpRecvfromstart_helper(socketid) {
     // Including "done : true" in the result indicates to fathom.js that this
     // multiresponse request is finished and can be cleaned up.
     var result = {done: true};
-    var obj = {requestid: requestid, result: result};
-    postMessage(JSON.stringify(obj));
+    util.postResult(result);
     return;
   }
 
   // Rather than use a loop, we schedule this same function to be called again.
   // This enables calls to udprecvstop (and potentially other functions) to
   // be processed.
-  setTimeout(udpRecvfromstart_helper, 0, socketid);
+  setTimeout(udpRecvfromstart_helper, 0, socketid, asstring);
+  return;
 }
 
 function udpRecvfromstop(socketid) {
@@ -308,6 +316,7 @@ function udpRecvfromstop(socketid) {
     return {error: 'No multiresponse function is running (nothing to stop).'};
   }
   util.data.multiresponse_stop = true;
+  return {};
 }
 
 function udpSetsockopt(socketid, name, value) {

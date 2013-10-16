@@ -1,0 +1,447 @@
+<!doctype html>
+<html>
+<head>
+	<meta charset="utf-8" />
+	<title></title>
+	<style>
+a {
+	color: #0060bf;
+	text-decoration: none;
+}
+body {
+	background: #fff;
+	font-family: sans-serif;
+	line-height: 1.4;
+	margin: 0 auto;
+}
+
+#options-top-content {
+	padding-top: 10px;
+}
+
+#options-top-content, .options-div, #options-bottom {
+	width: 80%;
+	margin-left: auto;
+	margin-right: auto;
+}
+
+em {
+	color: red;
+	font-style: normal;
+}
+
+fieldset {
+	background-color: #fff;
+	border: none;
+	box-shadow: -20px 0 20px -19px #DAE8F5;
+	-moz-box-shadow: -20px 0 20px -19px #DAE8F5;
+	margin-bottom: 5px;
+}
+
+fieldset:hover {
+	box-shadow: -20px 0 20px -19px #8dc3f5;
+	-moz-box-shadow: -20px 0 20px -19px #8dc3f5;
+}
+
+label {
+	font-weight: bold;
+}
+
+legend {
+	color: #0d6aac;
+	font-size: 1.5em;
+	margin-top: 20px;
+}
+
+#block-status-count, #cookie-status-count {
+	font-weight: bold;
+}
+
+#footer {
+	color: #555;
+	font-size: 10px;
+	margin-top: 30px;
+}
+
+#warning-link {
+	background-color: #FFA8A8;
+	border-radius: 10px;
+	-moz-border-radius: 10px;
+	display: none;
+	padding: 10px;
+	text-align: center;
+}
+
+#whitelist-add-input {
+	margin-right: 5px;
+	width: 295px;
+}
+
+#whitelist {
+	height: 150px;
+	-moz-resize: vertical;
+	resize: vertical;
+	width: 300px;
+}
+
+#bubbleTimeout {
+	margin-right: 5px;
+	width: 20px;
+}
+.suboption p {
+	margin-left: 15px;
+}
+.vr {
+	margin: 0px 10px 0px 10px;
+	border-right: 1px solid #ccc;
+}
+
+#code-libraries {
+	width: 200px;
+}
+a.license-link {
+	float: right;
+}
+
+#list-table-2, #whitelist-div {
+	border: 1px solid #58B2E4;
+	border-collapse: collapse;
+	margin-bottom: 20px;
+	text-align: left;
+	width: 100%;
+}
+
+#list-table-2 th {
+	font-weight: normal;
+}
+#list-table-2 tbody {
+	border-bottom: 1px solid #ccc;
+	display: block;
+	overflow: auto;
+	max-height: 400px;
+}
+#list-table-2 th, #list-table-2 td {
+	padding: 7px;
+}
+
+#toggles {
+	border-bottom: 1px solid #58B2E4;
+}
+
+#filters {
+	border-bottom: 1px solid #ccc;
+	border-top: 1px solid #58B2E4;
+}
+
+.category-row {
+	cursor: pointer;
+}
+
+.category-name {
+	color: #444;
+	font-weight: bold;
+	margin-right: 10px;
+}
+
+.category-bugs {
+}
+
+.hover {
+	background-color: #ffffcc;
+	box-shadow: 0 1px 4px 0 #ccc;
+	-moz-box-shadow: 0 1px 4px 0 #ccc;
+}
+
+/* tooltip */
+.hotspot {border-bottom: 1px dotted #0060bf;cursor: help;}
+#tt {z-index:1000;position:absolute; display:block;}
+#tttop {display:block; height:5px; overflow:hidden;}
+#ttcont {display:block; padding:5px;background-color: #dae8f5;border-radius: 5px;box-shadow: 0px 0px 20px #000;}
+#ttbot {display:block; height:5px; overflow:hidden}
+
+ul.tabs2 {
+	list-style: none;
+}
+
+ul.tabs2 li {
+	float: left;
+	left: -43px;
+	top: -2px;
+	margin-left: 3px;
+	position: relative;
+}
+
+ul.tabs2 li a {
+	background-color: #DAE8F5;
+	border-top-left-radius: 10px;
+	border-top-right-radius: 10px;
+	-moz-border-radius-topleft: 10px;
+	-moz-border-radius-topright: 10px;
+	color: #000;
+	padding: 4px 20px;
+}
+
+ul.tabs2 li.active a {
+	background-color: #58B2E4;
+	color: #fff;
+}
+
+.tabs {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+}
+
+.tabs li {
+	display: inline;
+}
+
+.tabs a {
+	background: #DAE8F5;
+	border-top-left-radius: 15px;
+	border-top-right-radius: 15px;
+	-moz-border-radius-topleft: 15px;
+	-moz-border-radius-topright: 15px;
+	color: #000;
+	font-size: large;
+	padding: 10px 20px 8px;
+	position: relative;
+	top: -6px;
+	text-decoration: none;
+}
+
+.tabs .active a {
+	background-color: #58B2E4;
+	color: #fff;
+	padding: 15px 40px 8px;
+}
+
+.app-info-shown {
+	border-bottom: 1px solid #ccc;
+	box-shadow: inset 0 2px 4px 0 #ccc;
+	-moz-box-shadow: inset 0 2px 4px 0 #ccc;
+}
+
+div.aboutbox {
+	font-family: Arial, Helvetica, sans-serif;
+	font-weight: normal;
+	font-size: 13px;
+	width: 100%;
+	margin-left: auto;
+	margin-right: auto;
+}
+
+div.aboutbox h1 {
+	font-size: 18px;
+	color: #000;
+	font-weight: bold;
+	display: inline;
+}
+
+div.aboutbox h2 {
+	color: #000;
+	font-weight: bold;
+	font-size: 13px;
+	display: inline;
+}
+
+div.aboutbox .company-logo {
+	float: right;
+	margin-right: 10px;
+}
+
+#options-top-content-floater {
+	float: right;
+	color: #666666;
+	font-family: Arial,Helvetica,sans-serif;
+	font-size: 13px;
+	font-weight: normal;
+	text-decoration: none;
+}
+
+#walkthrough-link {
+	float: right;
+	background-color: #dae8f5;
+	border-radius: 10px;
+	padding: 10px;
+	text-align: center;
+	width: 380px;
+	-moz-border-radius: 10px;
+}
+
+acronym {
+	border-bottom: 1px dotted;
+	cursor: help;
+}
+
+#basic-modal-content {display:none;}
+
+/* Overlay */
+#simplemodal-overlay {background-color:#000; cursor:wait;}
+
+/* Container */
+#simplemodal-container {height:90px; width:300px; color:#bbb; background-color:#333; border:4px solid #444; padding:12px;}
+#simplemodal-container .simplemodal-data {padding:8px;}
+#simplemodal-container code {background:#141414; border-left:3px solid #65B43D; color:#bbb; display:block; font-size:12px; margin-bottom:12px; padding:4px 6px 6px;}
+#simplemodal-container a {color:#ddd;}
+#simplemodal-container a.modalCloseImg {background:url(../img/basic/x.png) no-repeat; width:25px; height:29px; display:inline; z-index:3200; position:absolute; top:-15px; right:-16px; cursor:pointer;}
+#simplemodal-container h3 {color:#84b8d9;}
+</style>
+<script language="javascript" type="text/javascript" src="chrome://fathom/content/uploadPreferences.js"></script>
+
+<link rel="stylesheet" href="chrome://fathom/content/resources/jquery-ui.css" />
+<script src="chrome://fathom/content/resources/jquery-1.9.1.js"></script>
+<script src="chrome://fathom/content/resources/jquery-ui.js"></script>
+
+<script>
+$(function() {
+$( "#tabs" ).tabs();
+});
+</script>
+
+</head>
+<body>
+<div class="options-div" id="general-options">
+<legend><img style="vertical-align:middle" src="icons/logo.png"><span id="settings.tab.blocking" class="trans"> Fathom Data Collection Settings </span></legend>
+		<p>
+			<!--span id="settings.tab.blocking.note" class="trans">
+			Test 1
+			</span-->
+		</p>
+<div id="tabs">
+<ul>
+<li><a href="#tabs-1">Data Collection and Upload Settings</a></li>
+<!--li><a href="#tabs-2">Upload Settings</a></li-->
+<!--li><a href="#tabs-3">About Us</a></li-->
+</ul>
+<div id="tabs-1">
+<p>Fathom is research project with the goal to improve the troubleshooting experience of Internet users. We are working on tools to assist users diagnose problems in their Web browsing sessions and suggest mechanisms to improve performance issues. To achieve this goal the first step is to collect more information about how client systems and Web browsers are configured and used.</p>
+<p></p>
+<p>To understand how various browser and system configurations affect Web browsing, we collect the following set of measurements that are recorded on the end host system. These measurements can be uploaded automatically or manually to our servers. However, you can chose to skip any of them when running Fathom. The uploaded data is not shared with any third party.
+<p></p>
+Thank you for your cooperation.
+</p>
+	<fieldset>
+	<br style="clear:both">
+	<table id="list-table-2" role="grid">
+		<thead>
+			<tr>
+				<th>
+					<span id="total-count-2">
+					Select the measurements whose results you would like to share with us.
+					</span>
+					<!--span class="trans" id="settings.count.total">
+					Test 4
+					</span>
+					<span id="total-count-string">
+					Test 5
+					</span>(
+					<span id="blocked-count-2">
+					Test 6
+					</span>
+					<span class="trans" id="settings.count.blocked">
+					</span>)
+					<br><br>
+					<span id="group-note">
+					Test 7
+					</span-->
+				</th>
+			</tr>
+		</thead>
+
+		<thead id="toggles">
+			<tr>
+				<th>
+					<a href="#" onclick="uploadOptions.expandAll();" class="trans" id="expand-all-2">Expand All</a>
+					<span class="vr"></span>
+					<a href="#" onclick="uploadOptions.collapseAll();" class="trans" id="collapse-all-2">Collapse All</a>
+					<span class="vr"></span>
+					<a href="#" onclick="uploadOptions.selectAll();" class="trans" id="select-all-2">Select All</a>
+					<span class="vr"></span>
+					<a href="#" onclick="uploadOptions.selectNone();" class="trans" id="select-none-2">Select None</a>
+				</th>
+			</tr>
+		</thead>
+		
+	
+		<tbody id="addCategories"></tbody>
+		
+	</table>
+	
+	<p style="margin-bottom:25px">
+		<span id="settings.tab.blocking.note2" class="trans">
+			<div id="automatic"> Automatically upload passive data <input class="checkbox" id="autoUpload" onclick="uploadOptions.unGrey();" type="checkbox"> <div id="frequency" style="display:none"> Upload frequency <select id="time" onchange="uploadOptions.unGrey();"> <option>1 hr</option> <option>4 hr</option> <option>8 hr</option> <option>16 hr</option> <option>24 hr</option> </select> </div>
+			</div>
+		</span>
+	</p>
+	</fieldset>
+
+<script>
+uploadOptions.init();
+var parent = document.getElementById("addCategories");
+
+var cat1 = uploadOptions.addCategory(parent, "End-host passive measurement metrics", "passive", "End-host characteristics observed passively during execution.", true);
+var cat2 = uploadOptions.addCategory(parent, "Debug my connection metrics", "debugConnection", "Metrics observed during Debug My Conection measurements.", true);
+var cat3 = uploadOptions.addCategory(parent, "Active measurement metrics", "netError", "Metrics observed during active measurements.", true);
+// sub-category passive
+var subcat1 = uploadOptions.addSubCategory(cat1, "User and System CPU usage", "cpu", "Measures the CPU usage on the host.", false);
+var subcat2 = uploadOptions.addSubCategory(cat1, "System tasks", "tasks", "Measures the total number of tasks and processes on the host.", false);
+var subcat3 = uploadOptions.addSubCategory(cat1, "Free and used memory", "memory", "Measures the system\\'s memory consumption.", false);
+var subcat4 = uploadOptions.addSubCategory(cat1, "Network bytes sent", "tx", "Records the total bytes sent over the active network interface.", false);
+var subcat5 = uploadOptions.addSubCategory(cat1, "Network bytes received", "rx", "Records the total bytes received over the active network interface.", false);
+var subcat6 = uploadOptions.addSubCategory(cat1, "HTTP bytes sent", "httpsend", "Records the total HTTP bytes sent during the Web session.", false);
+var subcat7 = uploadOptions.addSubCategory(cat1, "HTTP bytes received", "httprecv", "Records the total HTTP bytes received during the Web session.", false);
+var subcat8 = uploadOptions.addSubCategory(cat1, "WiFi link quality", "link", "Measures the WiFi link quality on the host.", false);
+var subcat9 = uploadOptions.addSubCategory(cat1, "WiFi signal strength", "signal", "Measures the WiFi signal strength on the host.", false);
+var subcat10 = uploadOptions.addSubCategory(cat1, "WiFi noise", "noise", "Measures the WiFi noise on the host.", false);
+var subcat11 = uploadOptions.addSubCategory(cat1, "Browser information", "browser", "Records browser information, like vendor, name, version, etc.", false);
+var subcat12 = uploadOptions.addSubCategory(cat1, "Browser memory consumption", "memoryUsage", "Records the Web browser\\'s memory consumption on the host.", false);
+var subcat13 = uploadOptions.addSubCategory(cat1, "Operating system", "os", "Lists the OS name on the host.", false);
+var subcat14 = uploadOptions.addSubCategory(cat1, "DNS", "dns", "List of the configured resolvers on the host.", false);
+var subcat15 = uploadOptions.addSubCategory(cat1, "Active interface", "interface", "List of available interfaces which are configured. Details include name, MTU, MAC, TX and RX bytes.", false);
+// sub-category debugConnection
+var subcat16 = uploadOptions.addSubCategory(cat2, "Available interfaces", "interfaces0", "List of available interfaces which are configured. Details include name, MTU, MAC, TX and RX bytes.", false);
+var subcat17 = uploadOptions.addSubCategory(cat2, "Active interface configuration", "configuration0", "This lists the interface name and IP for the configured interfaces.", false);
+var subcat18 = uploadOptions.addSubCategory(cat2, "Auto-configured interface", "auto0", "This field indicates if the active interfaces are auto-configured.", false);
+var subcat19 = uploadOptions.addSubCategory(cat2, "Routing information", "routing0", "This indicates the routing configuration.", false);
+var subcat20 = uploadOptions.addSubCategory(cat2, "Traceroute", "traceroute0", "Lists the details of a traceroute to an echo server.", false);
+var subcat21 = uploadOptions.addSubCategory(cat2, "Available DNS resolvers", "nameservers0", "List of the configured resolvers on the host.", false);
+var subcat22 = uploadOptions.addSubCategory(cat2, "Lookup a standard domain name", "lookup_standard0", "This records the A record for a standard domain (currently www.google.com) via the configured resolver.", false);
+var subcat23 = uploadOptions.addSubCategory(cat2, "HTTP entity for a standard host", "http0", "Indicates the HTTP response code for the test to download the HTTP entity body for a standard URL (currently http://www.google.com).", false);
+// sub-category netError
+var subcat24 = uploadOptions.addSubCategory(cat3, "Error-inducing URI", "uri", "This is the URI for which Firefox generated the network error page.", false);
+var subcat25 = uploadOptions.addSubCategory(cat3, "Firefox error", "cause", "Cause of the error", false);
+var subcat26 = uploadOptions.addSubCategory(cat3, "Available interfaces", "interfaces", "List of available interfaces which are configured. Details include name, MTU, MAC, TX and RX bytes.", false);
+var subcat27 = uploadOptions.addSubCategory(cat3, "Active interface configuration", "configuration", "This lists the interface name and IP for the configured interfaces.", false);
+var subcat28 = uploadOptions.addSubCategory(cat3, "Auto-configured interface", "auto", "This field indicates if the active interfaces are auto-configured.", false);
+var subcat29 = uploadOptions.addSubCategory(cat3, "Routing information", "routing", "This indicates the routing configuration.", false);
+var subcat30 = uploadOptions.addSubCategory(cat3, "Traceroute", "traceroute", "Lists the details of a traceroute to an echo server.", false);
+var subcat31 = uploadOptions.addSubCategory(cat3, "Available DNS resolvers", "nameservers", "List of the configured resolvers on the host.", false);
+var subcat32 = uploadOptions.addSubCategory(cat3, "Lookup the current domain name", "lookup", "This records the A record for the domain via the configured resolver.", false);
+var subcat33 = uploadOptions.addSubCategory(cat3, "Lookup the current domain name with CD bit set", "lookup_cd", "This records the A record for the domain via the configured resolver by setting the CD option.", false);
+var subcat34 = uploadOptions.addSubCategory(cat3, "Lookup the current domain name using a public resolver", "lookup_public", "This records the ‘A’ record for the domain via a public resolver.", false);
+var subcat35 = uploadOptions.addSubCategory(cat3, "Lookup a standard domain name", "lookup_standard", "This records the A record for a standard domain (currently www.google.com) via the configured resolver.", false);
+var subcat36 = uploadOptions.addSubCategory(cat3, "Check TCP connectivity", "tcp", "This indicates errors in TCP connectivity to the domain.", false);
+var subcat37 = uploadOptions.addSubCategory(cat3, "HTTP response code for the host", "http", "Indicates the HTTP response code for the test to download the HTTP entity body for the domain.", false);
+var subcat38 = uploadOptions.addSubCategory(cat3, "HTTPS connectivity with the host", "https", "This test tries to retrieve the certificate chain associated with an HTTPS connection to the domain, if possible.", false);
+var subcat39 = uploadOptions.addSubCategory(cat3, "HTTP-level user proxies", "user_proxy", "Lists any locally configured proxy servers on the host which might affect connections to the domain.", false);
+var subcat40 = uploadOptions.addSubCategory(cat3, "Test connection to the user proxy", "proxy_available", "Indicates if a TCP connection can be established to the locally configured proxy server.", false);
+var subcat41 = uploadOptions.addSubCategory(cat3, "HTTP response code for standard host", "http_common", "Indicates the HTTP response code when retrieving the HTTP entity for a standard URL (currently http://www.google.com) in the presence of a locally configured proxy server.", false);
+
+</script>
+
+<p class="options-div">
+<button id="save_button" onclick="uploadOptions.save();"><span id="settings.save" class="trans">Save</span></button>
+<button id="cancel_button" onclick="uploadOptions.cancel();"><span id="settings.cancel" class="trans">Cancel</span></button>
+</p>
+
+</div>
+<!--div id="tabs-3">
+<p>Fathom is research project with the goal to improve the troubleshooting experience of Internet users. We are working on tools to assist users diagnose problems in their Web browsing sessions and suggest mechanisms to improve performance problems. To achieve this goal the first step is to collect more information about how client systems and Web browsers are configured and used.</p>
+</div-->
+</div>
+</div>
+
+</body>
+</html>
+
