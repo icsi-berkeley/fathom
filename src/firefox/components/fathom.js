@@ -1610,8 +1610,9 @@ FathomAPI.prototype = {
 	  try {
 		var q1 = "SELECT * FROM endhost ORDER BY id DESC LIMIT 1";
 	  	var statement = db.createStatement(q1);
-		statement.executeStep();
-		data = statement.getString(1);
+	    if (statement.executeStep()) {
+	      data = statement.getString(1);
+	    }
 	  } catch(e) {
 		dump(e);
 	  } finally {
@@ -4015,8 +4016,9 @@ FathomAPI.prototype = {
 		  try {
 			var q1 = "SELECT * FROM endhost ORDER BY id DESC LIMIT 1";
 		  	var statement = db.createStatement(q1);
-			statement.executeStep();
+		    if (statement.executeStep()) {
 			data = statement.getString(1);
+		    }
 		  } catch(e) {
 			dump(e);
 		  } finally {
