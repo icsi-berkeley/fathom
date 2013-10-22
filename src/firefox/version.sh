@@ -6,7 +6,7 @@ version=0.2
 build=`svn info | grep 'Revision:' | awk '{print $2}'`
 
 # This is a public key
-updatekey='MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCaZ4+jzpLhBjzVvL5Gji8SVN1pkNQwiCG1WwnB1RQNSIftDlJfYSPBfGDnpOtYJKWh8RuKIZ1k8oUyJWSmBGyp1TCwhDppHflAGVC+DaaN0Ax6XIn9SI9Ung\/AtO5CORKiBH6Qnt\/wDSm5iRsy97MSzRg32eE06COJw7z2wpNUhwIDAQAB'
+updatekey='MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCaww+igknCDR2\/kWisLU8lnxGqCr50lL1oIRJHvKokqskEtyB+p1FS5Tiq1rkCdiNb3RFU9e9PYNiLT\/zqx3hMn6u+EFbpjInKgit79YTTQa+LveB1oOgkXJHYXfDE7aNB06xMGhIFzt3cu2o7VSs32bijHsjESI4AHCdKTFHODwIDAQAB'
 
 # We source this script from the documentation extraction script, but
 # there don't want to actually update any files.  Thus we use a

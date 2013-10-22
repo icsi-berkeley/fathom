@@ -363,7 +363,52 @@ var libParse = function (output, obj) {
 
 	case "ping":
 		function parsePing(info) {
-			//dump("\n inside parse ping... \n");
+		        //dump("\n inside parse ping... \n");
+		    // Anna: build a local result object
+		    // so we can run multiple parallel pings
+		    var ping = 	{
+			domain: null,
+			ip: null,
+			pings : [],
+			stats: {
+			    packets: {
+				sent: null,
+				received: null,
+				lost: null,
+				lossrate : 100,
+				succrate : 0,
+				__exposedProps__: {
+				    sent: "r",
+				    received: "r",
+				    lost: "r",
+				    lossrate : "r",
+				    succrate : "r"
+				}
+			    },
+			    rtt: {
+				min: null,
+				max: null,
+				avg: null,
+				mdev: null,
+				__exposedProps__: {
+				    min: "r",
+				    max: "r",
+				    avg: "r",
+				    mdev: "r"
+				}
+			    },
+			    __exposedProps__: {
+				packets: "r",
+				rtt: "r"
+			    }
+			},
+			__exposedProps__: {
+			    domain: "r",
+			    ip: "r",
+			    stats: "r",
+			    pings: "r"
+			}
+		    };
 			switch (tmpos) {
 			case "Linux":
 			case "Android":
@@ -374,35 +419,72 @@ var libParse = function (output, obj) {
 					if (i > 0 && i < lines.length - 2) continue;
 					if (i == 0) {
 						var s = line.split(' ');
-						network.ping.domain = s[1];
-						network.ping.ip = s[2].replace(/\(|\)|:/gi, '');
-					} else if (i == lines.length - 2) {
+						ping.domain = s[1];
+						ping.ip = s[2].replace(/\(|\)|:/gi, '');
+
+					} else if (line.indexOf("bytes from")>0) {
+					    var s = line.split(' ');
+
+					    var p = {
+						bytes : parseInt(s[0]),
+						__exposedProps__: {
+						    bytes : "r",
+						}
+					    };
+					    [4,5,6].map(function(i) {
+						if (s[i].indexOf('=')>0) {
+						    var tmp = s[i].trim().split('=');
+						    p[tmp[0]] = parseFloat(tmp[1]);
+						    p.__exposedProps__[tmp[0]] = "r";
+						}
+					    });
+					    res.pings.push(p);
+
+					// Anna: this line count logic breaks 
+					// with pings that fail
+//					} else if (i == lines.length - 2) {
+					} else if (line.indexOf("packet")>0) {
 						var s = line.split(',');
 						var sent = s[0].trim().split(' ')[0];
 						var received = s[1].trim().split(' ')[0];
 						var lost = s[2].trim().split('%')[0];
-						network.ping.stats.packets.sent = sent;
-						network.ping.stats.packets.received = received;
-						network.ping.stats.packets.lost = lost;
-					} else if (i == lines.length - 1) {
-						var s = line.split('=')[1].split('/');
-						var min = s[0].replace(/ms/, "");
-						var max = s[1].replace(/ms/, "");
-						var avg = s[2].replace(/ms/, "");
-						var mdev = s[3].replace(/ms/, "");
-						network.ping.stats.rtt.min = min;
-						network.ping.stats.rtt.max = max;
-						network.ping.stats.rtt.avg = avg;
-						network.ping.stats.rtt.mdev = mdev;
+					    ping.stats.packets.sent = parseInt(sent);
+					    ping.stats.packets.received = parseInt(received);
+					    ping.stats.packets.lost = parseInt(lost);
+					    ping.stats.packets.lossrate = 0.0;
+					    ping.stats.packets.succrate = 100.0;
+					    if (sent>0) {
+						ping.stats.packets.lossrate = ping.stats.packets.lost*100.0/ping.stats.packets.sent;
+						ping.stats.packets.succrate = ping.stats.packets.received*100.0/ping.stats.packets.sent;
+					    }
+
+					// Anna: this line count logic breaks 
+					// with pings that fail as this 
+					// this last line is empty and gets 
+					// trimmed away I think
+//					} else if (i == lines.length - 1) {
+					} else if (line.indexOf("avg")>0) {
+ 					    var s = line.split('=')[1].split('/');
+					    var min = s[0].replace(/ms/, "");
+					    var max = s[1].replace(/ms/, "");
+					    var avg = s[2].replace(/ms/, "");
+					    var mdev = s[3].replace(/ms/, "");
+
+					    ping.stats.rtt.min = parseFloat(min);
+					    ping.stats.rtt.max = parseFloat(max);
+					    ping.stats.rtt.avg = parseFloat(avg);
+					    ping.stats.rtt.mdev = parseFloat(mdev);
 					}
 				}
 				break;
 			case "WINNT":
+			    // Anna: TODO: check that this works if 
+			    // there's no answer to the ping
 				var lines = info.trim().split("\n");
 				//dump(info);
 				if (lines.length == 1) {
-					network.ping.domain = "";
-					network.ping.ip = "";
+					ping.domain = "";
+					ping.ip = "";
 					return;
 				}
 				//dump("\nlines length = " + lines.length + "\n")
@@ -413,16 +495,16 @@ var libParse = function (output, obj) {
 					if (i > 0 && i < lines.length - 4) continue;
 					if (i == 0) {
 						var s = line.split(' ');
-						network.ping.domain = s[1];
-						network.ping.ip = (s[2].indexOf('[') == -1) ? s[1] : s[2].replace(/[|]|:/gi, '');
+						ping.domain = s[1];
+						ping.ip = (s[2].indexOf('[') == -1) ? s[1] : s[2].replace(/[|]|:/gi, '');
 					} else if (i == lines.length - 3) {
 						var s = line.split(',');
 						var sent = s[0].trim().split(' ')[3];
 						var received = s[1].trim().split(' ')[2];
 						var lost = s[2].trim().split('%')[0].split("(")[1];
-						network.ping.stats.packets.sent = sent;
-						network.ping.stats.packets.received = received;
-						network.ping.stats.packets.lost = lost;
+						ping.stats.packets.sent = sent;
+						ping.stats.packets.received = received;
+						ping.stats.packets.lost = lost;
 						//dump("\n---------\n" + network.ping.stats.packets + "\n\n")														
 					} else if (i == lines.length - 1) {
 						var s = line.split(',');
@@ -430,10 +512,10 @@ var libParse = function (output, obj) {
 						var max = s[1].split('=')[1].split('ms')[0].trim();
 						var avg = s[2].split('=')[1].split('ms')[0].trim();
 						var mdev = 0;
-						network.ping.stats.rtt.min = min;
-						network.ping.stats.rtt.max = max;
-						network.ping.stats.rtt.avg = avg;
-						network.ping.stats.rtt.mdev = mdev;
+						ping.stats.rtt.min = min;
+						ping.stats.rtt.max = max;
+						ping.stats.rtt.avg = avg;
+						ping.stats.rtt.mdev = mdev;
 					}
 				}
 				break;
@@ -441,7 +523,7 @@ var libParse = function (output, obj) {
 				break;
 			}
 			//dump("\n----- done with ping ----\n");
-			return network.ping;
+			return ping;
 		}
 
 		return parsePing(obj);
@@ -729,7 +811,7 @@ var libParse = function (output, obj) {
 					if (w[1].trim() == "UP") {
 						var intf = new interfaces();
 						intf.name = w[0].trim();
-						//var temp_ip = w[2].trim().split("/");
+						var temp_ip = w[2].trim().split("/");
 						intf.address = {
 							ipv4: null,
 							ipv6: null,
@@ -742,9 +824,9 @@ var libParse = function (output, obj) {
 								mask: "r"
 							}
 						};
-						/*intf.address.ipv4 = temp_ip[0].trim();
-						intf.address.mask = cidrToNetmask(parseInt(temp_ip[1].trim()));*/
-						intf.address.ipv4 = w[2].trim();
+						intf.address.ipv4 = temp_ip[0].trim();
+//						intf.address.mask = cidrToNetmask(parseInt(temp_ip[1].trim()));
+//						intf.address.ipv4 = w[2].trim();
 						intf.address.mask = w[3].trim();
 						intf.address.ipv6 = "N/A";
 						intf.address.broadcast = "N/A";
@@ -1293,6 +1375,7 @@ var libParse = function (output, obj) {
 						gateway.ip = x[1].replace(/\(|\)/gi,'');
 						gateway.mac = x[3];
 						gateway.interface = x[5];
+						arpCache.push(gateway);
 					}
 					break;
 				case "Windows":
@@ -1393,9 +1476,23 @@ var libParse = function (output, obj) {
 				if (lines.length < 3) return;
 				var line = lines[lines.length - 1];
 				var elems = line.trim().replace(/\s{2,}/g, ' ').replace(/\./g, '').split(" ");
+			    // Anna: the above is not valid - there can be multiple
+			    // wireless interfaces, happens for example on
+			    // androids that have wifi direct (named p2pX)
+			    // -> adding an optional parameter to select the iface
+			    if (params && params.length==1) {
+				var iface = elems[0].replace(':','');
+				if (params[0] === iface) {
+				    wifi.link = elems[2];
+				    wifi.signal = elems[3];
+				    wifi.noise = elems[4];
+				}
+			    } else {
+				// just pick the last line
 				wifi.link = elems[2];
 				wifi.signal = elems[3];
 				wifi.noise = elems[4];
+			    }
 				break;
 			case "Darwin":
 				var lines = info.trim().split("\n");
@@ -1415,6 +1512,143 @@ var libParse = function (output, obj) {
 		}
 		return parseProcNetWireless(obj);
 		break;
+
+	case "activeWifiInterfaces":
+	    // parses output of iwconfig, airport etc
+	    function parse(info) {
+		var iwconfig = {
+		    mac : null,
+		    proto: null,
+		    ssid: null,
+		    bssid : null,
+		    mode: null,
+		    freq: null,
+		    channel: null,
+		    name : null,
+		    txpower : null,
+		    signal : null,
+		    noise : null,
+		    bitrate : null,		    
+		    __exposedProps__: {
+			mac: "r",
+			proto: "r",
+			ssid: "r",
+			bssid : "r",
+			mode: "r",
+			freq: "r",
+			channel: "r",
+			name : "r",
+			txpower : "r",
+			signal : "r",
+			noise : "r",
+			bitrate : "r",		    			
+		    }
+		};
+
+		var lines = info.trim().split("\n");
+		switch (tmpos.toLowerCase()) {
+		case "linux":
+		    var i;
+		    for (i = 0; i<lines.length; i++) {
+			var tmp = lines[i].split();
+			if (lines[i].indexOf('ESSID')>=0) {
+			    // wlan0     IEEE 802.11abgn  ESSID:"BISmark5-testbed"
+			    iwconfig.name = tmp[0].trim();
+			    iwconfig.proto = tmp[2].trim();
+			    var tmp2 = tmp[3].trim().split(':');
+			    iwconfig.ssid = tmp2[1].replace("\"",'');
+			} else if (lines[i].indexOf('Mode:')>=0) {
+			    // Mode:Managed  Frequency:5.18 GHz  Access Point: A0:21:B7:BB:17:54
+			    var tmp2 = tmp[0].trim().split(':');
+			    iwconfig.mode = tmp2[1];
+			    tmp2 = tmp[1].trim().split(':');
+			    iwconfig.freq = tmp2[1];
+			    iwconfig.bssid = tmp[5];
+			} else if (lines[i].indexOf('Bit Rate')>=0) {
+			    // Bit Rate[=;]6 Mb/s   Tx-Power[=;]15 dBm
+			    if (tmp[1].indexOf('=')>=0) { // fixed bitrate
+				var tmp2 = tmp[1].trim().split('=');
+				iwconfig.bitrate = tmp2[1];
+			    } else { // auto bitrate
+				var tmp2 = tmp[1].trim().split(';');
+				iwconfig.bitrate = tmp2[1];
+			    }
+
+			    if (tmp[3].indexOf('=')>=0) { // fixed power
+				var tmp2 = tmp[3].trim().split('=');
+				iwconfig.txpower = tmp2[1];
+			    } else if (tmp[3].indexOf('=')>=0) { // auto power
+				var tmp2 = tmp[3].trim().split(';');
+				iwconfig.txpower = tmp2[1];
+			    } 
+
+			} else if (lines[i].indexOf('Link Quality')>=0) {
+			    // Link Quality=66/70  Signal level=-44 dBm 
+			    if (tmp[3].indexOf('=')>=0) { // fixed
+				var tmp2 = tmp[3].trim().split('=');
+				iwconfig.signal = tmp2[1];
+			    } else { // auto
+				var tmp2 = tmp[3].trim().split(';');
+				iwconfig.signale = tmp2[1];
+			    }
+			}
+		    }
+		    break;
+		case "darwin":
+		    var inwifiport = false;
+		    var i;
+		    for (i = 0; i<lines.length; i++) {
+			var tmp = lines[i].trim().split(': ');
+			if (tmp.length!=2)
+			    continue;
+
+			switch(tmp[0]) {
+			case "agrCtlRSSI":
+			    iwconfig.signal = tmp[1].trim();
+			    break;
+			case "agrCtlNoise":
+			    iwconfig.noise = tmp[1].trim();
+			    break;
+			case "op mode":
+			    iwconfig.mode = tmp[1].trim();
+			    break;
+			case "lastTxRate":
+			    iwconfig.bitrate = tmp[1].trim();
+			    break;
+			case "BSSID":
+			    iwconfig.bssid = tmp[1].trim();
+			    break;
+			case "SSID":
+			    iwconfig.ssid = tmp[1].trim();
+			    break;
+			case "channel":
+			    iwconfig.channel = tmp[1].trim();
+			    break;
+			case "Hardware Port":
+			    if (tmp[1].trim() === "Wi-Fi")
+				inwifiport = true;
+			    else
+				inwifiport = false;
+			    break;
+			case "Device":
+			    if (inwifiport)
+				iwconfig.name = tmp[1].trim();
+			    break;
+			case "Ethernet Address":
+			    if (inwifiport)
+				iwconfig.mac = tmp[1].trim();
+			    break;
+			};
+		    }
+		    break;
+		case "android":
+		    iwconfig.name = info.trim();
+		    break;
+		}
+		return iwconfig;
+	    }
+	    return parse(obj);
+	    break;
 
 	default:
 		break;

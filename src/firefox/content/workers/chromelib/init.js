@@ -29,7 +29,8 @@ var util = {
   // "global" scope.
   actions : {},
 
-  // Path to the nspr library passed in through an init message.
+  // Name and path to the nspr library passed in through an init message.
+  nsprname : null,
   nsprpath : null,
 
   arch : null,
@@ -125,12 +126,17 @@ var util = {
       // "ignore" whose value is true;
       if (!result || !result['ignore']) {
         // Send the result back via postMessage().
-        var obj = {requestid: requestid, result: result};
-        postMessage(JSON.stringify(obj));
+	util.postResult(result);
       }
       return;
     }
     throw 'Unknown action: ' + actionname;
+  },
+
+  postResult : function(result) {
+    var requestid = util.data.lastrequestid;
+    var obj = {requestid: requestid, result: result};
+    postMessage(JSON.stringify(obj));    
   },
 
   log : function log(msg) {
@@ -145,6 +151,8 @@ onmessage = function(event) {
   util.getArgument(data, 'init', 'The worker did not receive an init message.');
 
   util.nsprpath = util.getArgument(data, 'nsprpath');
+  // Anna: add name arg as Firefox 22 folds nspr inside other libs
+  util.nsprname = (data.hasOwnProperty('nsprname') ? util.getArgument(data, 'nsprname') : "nspr4");
   util.arch = util.getArgument(data, 'arch');
   util.os = util.getArgument(data, 'os');
   importScripts('chrome://fathom/content/workers/chromelib/nspr.js');

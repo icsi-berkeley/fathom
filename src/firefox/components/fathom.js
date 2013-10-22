@@ -368,26 +368,43 @@ FathomAPI.prototype = {
 
         if (!requestinfo) {
           Logger.warning('Received response from worker for unknown requestid: ' + requestid);
-          return;
-        }
+        } else {
 
         // TODO: possibly make sure the worker is the one we expect (the one
         // stored in the requestinfo).
         try {
-          // TODO: call the callback async using setTimeout.
-          result["__exposedProps__"] = {};
-          for(var props in result) {
-            result["__exposedProps__"][props] = "r";
-          }
-          requestinfo['callback'](result);
+          if(result) {
+		      // TODO: call the callback async using setTimeout.
+	    var exp = {};
+		      for(var props in result) {
+//		        result["__exposedProps__"][props] = "r";
+			exp[props] = "r";
+		      }
+		      result["__exposedProps__"] = exp;
+
+		  }
+		  requestinfo['callback'](result);
         } catch (e) {
           // TODO: decide on a good way to send this error back to the document.
           Logger.warning('Error when calling user-provide callback: ' + e);
+	  Logger.error(e.stack);
         }
+	}
 
-        if (!requestinfo['multiresponse'] || result['done']) {
+        if ((requestinfo && !requestinfo['multiresponse']) || 
+	    (result && result['done'])) 
+	{
           delete fathomapi.requests[requestid];
         }
+
+	// Anna: adding a way to clean things up inside fathom
+	// if the worker closes itself
+	if (result && result['closed']) {
+	  // the worker has closed itself, remove any references
+	  // so this worker object gets garbage collected
+	  delete fathomapi.chromeworkers[workername];
+          Logger.info('Worker closed: ' + workername);
+	}
       };
 
       Components.utils.import("resource://gre/modules/Services.jsm");
@@ -409,35 +426,72 @@ FathomAPI.prototype = {
 	else if(os == "WINNT")
 		libd = "CurProcD";
 
-	var dirs = [Services.dirsvc.get("GreD", Ci.nsILocalFile),
-		    Services.dirsvc.get(libd, Ci.nsILocalFile),
-		    this._getLocalFile('/lib64'),
-		    this._getLocalFile('/lib')]
-
-	for (var i in dirs) {
-	  if (! dirs[i])
-	    continue;
-	  Logger.info("nspr4 candidate dir: " + dirs[i].path);
-	  if (! dirs[i].exists())
-	    continue;
-	  this.nsprfile = dirs[i].clone();
-	  this.nsprfile.append(ctypes.libraryName("nspr4"));
-	  if (this.nsprfile.exists())
-	    break;
+	// Anna: Firefox 22 folds nspr4 to libnss3, detect the version
+	var libname = "nspr4";
+	var xulAppInfo = Components.classes["@mozilla.org/xre/app-info;1"].getService(Components.interfaces.nsIXULAppInfo);
+	var versionChecker = Components.classes["@mozilla.org/xpcom/version-comparator;1"].getService(Components.interfaces.nsIVersionComparator);
+	Logger.info("platformversion: " + xulAppInfo.platformVersion);
+	Logger.info("appversion: " + xulAppInfo.version);
+	if(versionChecker.compare(xulAppInfo.version, "22.0") >= 0) {
+	  // running under Firefox 22.0 or later
+	  // TODO: check the correct name for windows!
+	  libname = "nss3";
+	  Logger.info("libName: " + libname);
 	}
-
-	if (! this.nsprfile.exists()) {
+  
+	var found = false;
+	if (os !== "Android") {
+	  var dirs = [Services.dirsvc.get("GreD", Ci.nsILocalFile),
+		      Services.dirsvc.get(libd, Ci.nsILocalFile)];
+	  if (os == "Linux") {
+	    dirs.push(this._getLocalFile('/lib64'));
+	    dirs.push(this._getLocalFile('/lib'));
+	  }
+	  for (var i in dirs) {
+	    if (! dirs[i])
+	      continue;
+	    Logger.info("nspr4 candidate dir: " + dirs[i].path);
+	    if (! dirs[i].exists())
+	      continue;
+	    this.nsprfile = dirs[i].clone();
+	    this.nsprfile.append(ctypes.libraryName(libname));
+	    if (this.nsprfile.exists()) {
+	      found = true;
+	      break;
+	    }
+	  }
+	} else {
+	  // FIXME: figure out how android names the apks, at least -1 and -2
+	  // seen on test devices...
+	  for (var j = 1; j < 3; j++) {
+	    try {
+              var nsprFile = this._getLocalFile();
+	      nsprFile.initWithPath("/data/app/org.mozilla.firefox-"+j+".apk");
+	      Logger.info("nspr4 candidate path: " + nsprFile.path);
+	      if (nsprFile.exists()) {
+		this.nsprfile = this._getLocalFile();
+		if(versionChecker.compare(xulAppInfo.version, "24.0") >= 0) {
+		  // Starting from 24.0 the libs are moved to another directory ..
+		  this.nsprfile.initWithPath("/data/app/org.mozilla.firefox-"+j+".apk!/assets/lib"+libname+".so");
+		} else {
+		  this.nsprfile.initWithPath("/data/app/org.mozilla.firefox-"+j+".apk!/lib"+libname+".so");
+		}
+		found = true;
+		break;
+	      }
+	    } catch (e) {
+	      dump(e);
+	      continue;
+	    }
+	  }
+	}
+	if (!found) {
 	  // XXX Flag somehow to the user that we cannot find the NSPR
 	  // library. --cpk
 	  //throw "Cannot find NSPR.";
-	  if(os == "Android") {
-	  	var nsprFile = Cc["@mozilla.org/file/local;1"].createInstance(Ci.nsILocalFile);
-		nsprFile.initWithPath("/data/app/org.mozilla.firefox-1.apk!/libnspr4.so");
-		this.nsprfile = nsprFile;
-	  } else {
-	  	 // fallback on the packaged file
-	  	this.nsprfile = this_nsprfile;
-	  }
+	  
+          // fallback on the packaged file
+          this.nsprfile = this_nsprfile;
 	}
 
 	Logger.info("nspr4 location: " + this.nsprfile.path);
@@ -453,7 +507,8 @@ FathomAPI.prototype = {
           .getService(Components.interfaces.nsIXULRuntime)
           .OS;
       
-      var obj = {'init' : true, 'nsprpath' : this.nsprfile.path,  
+      var obj = {'init' : true, 'nsprpath' : this.nsprfile.path,
+		 'nsprname' : libname,  
 		 'arch' : system.arch, 'os' : system.os};
       worker.postMessage(JSON.stringify(obj));
     } catch (exc) {
@@ -476,10 +531,12 @@ FathomAPI.prototype = {
     worker.postMessage(JSON.stringify(obj));
   },
 
-  doNonSocketRequest : function doNonSocketRequest(callback, action, args) {
+  doNonSocketRequest : function doNonSocketRequest(callback, action, args, multiresponse) {
     
     if (!this.securityCheck())
       return;  
+
+    var multiresponse = multiresponse || false;
     
     var workername = 'nonsocketworker';
     var workerscript = 'chromeworker';
@@ -488,7 +545,7 @@ FathomAPI.prototype = {
     }
     var worker = this.chromeworkers[workername];
 
-    this._performRequest(worker, callback, action, args);
+    this._performRequest(worker, callback, action, args, multiresponse);
   },
 
   doSocketUsageRequest : function doSocketUsageRequest(callback, action, args, multiresponse) {
@@ -506,7 +563,8 @@ FathomAPI.prototype = {
     }
 
     Logger.info("Looking up socket " + socketid + " for action " + action);
-    var worker = this.socketworkermap[socketid];
+//    var worker = this.socketworkermap[socketid];
+    var worker = this.chromeworkers['socketworker'+socketid];
     if (!worker) {
       Logger.info("Could not find the worker for this socket.");
       // TODO: call callback async.
@@ -535,10 +593,10 @@ FathomAPI.prototype = {
     this._initChromeWorker(workername, workerscript);
     var worker = this.chromeworkers[workername];
 
-    const socketmap = this.socketworkermap;
+//    const socketmap = this.socketworkermap;
     function socketRegistrationCallback(result) {
       if (result && !result['error']) {
-        socketmap[socketid] = worker;
+//        socketmap[socketid] = worker;
         Logger.info("Registered socket worker " + worker.name + " for socketid " + socketid);
         callback(socketid);
       } else {
@@ -549,6 +607,25 @@ FathomAPI.prototype = {
     }
 
     this._performRequest(worker, socketRegistrationCallback, action, args);
+  },
+
+  /*
+   * Anna: same as above but return the id to the client right away without
+   * callbacks.
+   */
+  doSyncSocketOpenRequest : function doSyncSocketOpenRequest(callback, action, args, multiresponse) {    
+    if (!this.securityCheck())
+      return;
+
+    var multiresponse = multiresponse || false;
+    var socketid = this.nextsocketid++;
+    var workername = 'socketworker' + socketid;
+    var workerscript = 'chromeworker';
+    this._initChromeWorker(workername, workerscript);
+    var worker = this.chromeworkers[workername];
+//    this.socketworkermap[socketid] = worker;
+    this._performRequest(worker, callback, action, args, multiresponse);
+    return socketid;
   },
 
   _initScriptWorker : function _initScriptWorker(sourcecode, dataOutFunc, errorFunc) {
@@ -563,6 +640,8 @@ FathomAPI.prototype = {
     // See here for an example:
     // https://bugzilla.mozilla.org/show_bug.cgi?id=701345
     // (Note: I also tried using a resource url and that had the same error.)
+
+    // Anna: does not work on Firefox 22 - throws SecurityError
     var worker = this.window.Worker("chrome://fathom/content/workers/scriptworker.js");
 
     try {
@@ -627,18 +706,6 @@ FathomAPI.prototype = {
         }
       };
 
-      var dataInFunc = function (data) {
-        // TODO: sanitize/copy data.
-        var sanitizeddata = data;
-
-        // We get a "could not clone object" error when trying to pass anything
-        // but a string as the arguement to this postMessage call. So, we
-        // convert to JSON and parse the JSON on the other side.
-        // Somewhat related (though this is for ChromeWorkers):
-        // https://bugzilla.mozilla.org/show_bug.cgi?id=667388
-        var obj = {dataIn: sanitizeddata};
-        worker.postMessage(JSON.stringify(obj));
-      };
 
       // TODO: now that we figured out we need to manually JSON.stringify()
       // objects we pass to postMessage for this worker, we should make the
@@ -649,10 +716,29 @@ FathomAPI.prototype = {
       throw exc;
     }
 
+    var dataInFunc = function (scriptid, data) {
+        // TODO: sanitize/copy data.
+        var sanitizeddata = data;
+
+        // We get a "could not clone object" error when trying to pass anything
+        // but a string as the arguement to this postMessage call. So, we
+        // convert to JSON and parse the JSON on the other side.
+        // Somewhat related (though this is for ChromeWorkers):
+        // https://bugzilla.mozilla.org/show_bug.cgi?id=667388
+        var obj = {dataIn: sanitizeddata};
+      var worker = this.scriptworkers[scriptid];
+        worker.postMessage(JSON.stringify(obj));
+      };
+
+
     var scriptid = this.nextscriptid++;
     this.scriptworkers[scriptid] = worker;
-
-    return {scriptid: scriptid, dataIn: dataInFunc};
+    var self = this;
+    return {scriptid: scriptid, 
+	    dataIn: dataInFunc.bind(self), 
+	    __exposedProps__ : { dataIn : "r",
+			       scriptid : "r"}
+	   };
   },
 
   /*
@@ -794,6 +880,11 @@ FathomAPI.prototype = {
         }
       }
       datacallback(data);
+      try {
+		  fileobj.remove(false);
+		} catch (e) {
+		  Logger.warning("Unable to delete file " + fileobj.path + " : " + e);
+		}
     });
   },
 
@@ -861,7 +952,7 @@ FathomAPI.prototype = {
                       'ERRFILE="$2"',
                       'shift',
                       'shift',
-                      '"$@" >"$OUTFILE" 2>"$ERRFILE"'];
+                      '$@ >"$OUTFILE" 2>"$ERRFILE"'];
       wrappercontents = wrapperlines.join('\n') + '\n';
     } else {
       throw 'Unhandled OS: ' + os;
@@ -927,8 +1018,8 @@ FathomAPI.prototype = {
     var errfile = tmpdir.clone()
     errfile.append('fathom-command.' + commandid + '.err');
 
-    Logger.debug("outfile: " + outfile.path);
-    Logger.debug("errfile: " + errfile.path);
+//    Logger.debug("outfile: " + outfile.path);
+//    Logger.debug("errfile: " + errfile.path);
 
     const fathomapi = this;
 
@@ -942,18 +1033,20 @@ FathomAPI.prototype = {
         var exitstatus = subject.exitValue;
 
         function handleOutfileData(outdata) {
-          function handleErrfileData(errdata) {
-          	try {
-	            callback({exitstatus: exitstatus, stdout: outdata, stderr: errdata, __exposedProps__: { exitstatus: "r", stdout: "r", stderr: "r" }});
+        	 function handleErrfileData(errdata) {
+           	try {
+	             callback({exitstatus: exitstatus, stdout: outdata, stderr: errdata, __exposedProps__: { exitstatus: "r", stdout: "r", stderr: "r" }});
     	        callback = null;
     	        incrementalCallback = false;
     	    } catch(e) {
     	    	dump("\n" + "Error executing the callback function: " + e + "\n");
     	    }
           }
-          fathomapi._readFile(errfile, handleErrfileData);
-          fathomapi._deleteFile(errfile);
-
+          try{
+          	fathomapi._readFile(errfile, handleErrfileData);
+          	//fathomapi._deleteFile(errfile);
+		  } catch(e) {
+		  }
 	  	  // kill the process          
           try{
           	if (subject.isRunning) {
@@ -965,8 +1058,11 @@ FathomAPI.prototype = {
     	  }
         }
 
-        fathomapi._readFile(outfile, handleOutfileData);
-        fathomapi._deleteFile(outfile);
+		try{
+	        fathomapi._readFile(outfile, handleOutfileData);
+        	//fathomapi._deleteFile(outfile);
+        } catch(e) {
+        }
       }
     };
 
@@ -990,9 +1086,10 @@ FathomAPI.prototype = {
 		var wrapperargs = [wrapperfile.path, outfile.path, errfile.path, cmd].concat(args);
 	else
     	var wrapperargs = [outfile.path, errfile.path, cmd].concat(args);
+
     process.runAsync(wrapperargs, wrapperargs.length, observer);
 
-	/* just testing */
+	/* incremental output for traceroute */
 	if(incrementalCallback == true) {
 		var file = FileUtils.getFile("TmpD", [outfile.leafName]);
 	
@@ -1255,6 +1352,8 @@ FathomAPI.prototype = {
 	tcp: {
           openSendSocket : self.socket.tcp.openSendSocket.bind(self),
           openReceiveSocket : self.socket.tcp.openReceiveSocket.bind(self),
+          acceptstart : self.socket.tcp.acceptstart.bind(self),
+          acceptstop : self.socket.tcp.acceptstop.bind(self),
           closeSocket : self.socket.tcp.closeSocket.bind(self),
           send : self.socket.tcp.send.bind(self),
           receive : self.socket.tcp.receive.bind(self),
@@ -1263,6 +1362,8 @@ FathomAPI.prototype = {
           __exposedProps__: {
 		      openSendSocket: "r",
 		      openReceiveSocket: "r",
+		      acceptstart: "r",
+		      acceptstop: "r",
 		      closeSocket: "r",
 		      send: "r",
 		      receive: "r",
@@ -1304,7 +1405,7 @@ FathomAPI.prototype = {
 		      recvfromstart: "r",
 		      recvfromstop: "r",
 		      setsockopt: "r",
-			  netprobe: "r",
+//			  netprobe: "r", (disabling - anna)
 			  getHostIP: "r",
 			  getPeerIP: "r",
 	      }
@@ -1322,7 +1423,9 @@ FathomAPI.prototype = {
         doPing : self.system.doPing.bind(self),
         getWifiInfo : self.system.getWifiInfo.bind(self),
         getNameservers : self.system.getNameservers.bind(self),
+        getHostname : self.system.getHostname.bind(self),
         getActiveInterfaces : self.system.getActiveInterfaces.bind(self),
+        getActiveWifiInterfaces : self.system.getActiveWifiInterfaces.bind(self),
         getArpCache : self.system.getArpCache.bind(self),
         getProxyInfo : self.system.getProxyInfo.bind(self),
         getBrowserMemoryUsage : self.system.getBrowserMemoryUsage.bind(self),
@@ -1349,7 +1452,9 @@ FathomAPI.prototype = {
 		    doPing: "r",
 			getWifiInfo: "r",
 			getNameservers: "r",
+			getHostname: "r",
 			getActiveInterfaces: "r",
+			getActiveWifiInterfaces: "r",
 			getArpCache: "r",
 			getProxyInfo: "r",
 			getRoutingTable: "r",
@@ -1358,7 +1463,7 @@ FathomAPI.prototype = {
 			getLoad: "r",
 			getMemInfo: "r",
 			//getLastKnownInterface: "r",
-			//getEndHostInfo: "r",
+			getEndHostInfo: "r",
 			win: "r"
 		}
       },
@@ -1392,6 +1497,19 @@ FathomAPI.prototype = {
           test: "r"
         }	
       },
+
+      // Anna: ported network measurement tools
+      // adding a separate module to keep things clean
+      tools: {
+	iperf : self.tools.iperf.bind(self),
+	iperfStop : self.tools.iperfStop.bind(self),
+//	ping : self.tools.ping.bind(self),
+//	traceroute : self.tools.traceroute.bind(self),
+	__exposedProps__: {
+          iperf: "r",
+          iperfStop: "r",
+	}
+      },
       
       // Temporary location for deprecated APIs
       depr: {
@@ -1410,6 +1528,7 @@ FathomAPI.prototype = {
       socket: {},
       system: {},
       util: {},
+      tools: {},
 
       depr: {},
 
@@ -1421,7 +1540,8 @@ FathomAPI.prototype = {
 	script: "r",
 	socket: "r",
 	system: "r",
-	util: "r"
+	util: "r",
+	tools: "r"
       }
     };
 
@@ -1448,7 +1568,7 @@ FathomAPI.prototype = {
 		}
 		cstream.close();
 	} catch (e) {
-		dump(e);
+//		dump(e);
 		Logger.info("No client policy available.");
 	}
 	
@@ -1490,16 +1610,23 @@ FathomAPI.prototype = {
 	  try {
 		var q1 = "SELECT * FROM endhost ORDER BY id DESC LIMIT 1";
 	  	var statement = db.createStatement(q1);
-		statement.executeStep();
-		data = statement.getString(1);
+	    if (statement.executeStep()) {
+	      data = statement.getString(1);
+	    }
 	  } catch(e) {
 		dump(e);
 	  } finally {
 		statement.reset();
 	  }
 
-	  // get the top most entry in the db
-	  return JSON.parse(data).interface.ip;
+	  if (data && data.length > 0) {
+	    try{
+	      // get the top most entry in the db
+	      return JSON.parse(data).interface.ip;
+	    } catch(e) {
+	    }
+	  }
+	  return null;
 	}
 
     /*function getIP() {
@@ -1766,10 +1893,10 @@ FathomAPI.prototype = {
        
        if(!api_flag) {
 			// all apis are not covered, invoke the security dialog
-			dump("APIs not covered.");
+//			dump("APIs not covered.");
 		} else {
 			// all apis are covered, do nothing
-			dump("APIs covered.");
+//			dump("APIs covered.");
 			callback({});
 			return;
 		}
@@ -2154,6 +2281,23 @@ FathomAPI.prototype = {
 	this.doSocketOpenRequest(callback, 'tcpOpenReceiveSocket', [port]);
       },
 
+      acceptstart : function(callback, socketid) {
+	var handler = function(resp) {
+	  // FIXME: broken
+//	  if (resp.socket) {
+	    // create a new chromeworker for the incoming connection
+//            Logger.debug("connection from " + resp.address);
+//	    this.doSocketOpenRequest(callback, 'tcpAcceptSocket', [resp.socket]);
+//	  }
+	};
+	var multiresponse = true;
+	this.doSocketUsageRequest(handler, 'tcpAcceptstart', [socketid], multiresponse);	
+      },
+
+      acceptstop : function(callback, socketid) {
+	this.doSocketUsageRequest(callback, 'tcpAcceptstop', [socketid]);	
+      },
+
       /**
        * @method closeSocket
        * @static
@@ -2208,8 +2352,11 @@ FathomAPI.prototype = {
        * @param {integer} socketid  The socket handle previously
        * obtained from one of the opening functions.
        */ 
-      receive : function (callback, socketid) {
-	this.doSocketUsageRequest(callback, 'tcpReceive', [socketid]);
+      receive : function (callback, socketid, asstring) {
+	if (asstring == undefined) {
+	  asstring = false;
+	}
+	this.doSocketUsageRequest(callback, 'tcpReceive', [socketid, asstring]);
       },
 
       /** 
@@ -2386,8 +2533,8 @@ FathomAPI.prototype = {
        * care to actually process all of the data received.  To ignore
        * this feature, pass 0.
        */ 
-      recv : function(callback, socketid, length) {
-	this.doSocketUsageRequest(callback, 'udpRecv', [socketid, length]);
+      recv : function(callback, socketid, length, timeout) {
+	this.doSocketUsageRequest(callback, 'udpRecv', [socketid, length, timeout]);
       },
 
       /** 
@@ -2443,9 +2590,12 @@ FathomAPI.prototype = {
        * care to actually process all of the data received.  To ignore
        * this feature, pass 0.
        */     
-      recvstart : function(callback, socketid, length) {
+      recvstart : function(callback, socketid, length, asstring) {
 	var multiresponse = true;
-	this.doSocketUsageRequest(callback, 'udpRecvstart', [socketid, length], multiresponse);
+	if (asstring == undefined) {
+	  asstring = false;
+	}
+	this.doSocketUsageRequest(callback, 'udpRecvstart', [socketid, length, asstring], multiresponse);
       },
 
       /**
@@ -2464,7 +2614,7 @@ FathomAPI.prototype = {
        * obtained for this UDP flow.
        */     
       recvstop : function(callback, socketid) {
-	this.doSocketUsageRequest(callback, 'udprRcvstop', [socketid]);
+	this.doSocketUsageRequest(callback, 'udpRecvstop', [socketid]);
       },
 
       /** 
@@ -2539,9 +2689,12 @@ FathomAPI.prototype = {
        * @param {integer} socketid The socket handle previously
        * obtained for this UDP flow.
        */     
-      recvfromstart : function(callback, socketid) {
+      recvfromstart : function(callback, socketid, asstring) {
 	var multiresponse = true;
-	this.doSocketUsageRequest(callback, 'udpRecvfromstart', [socketid], multiresponse);
+	if (asstring == undefined) {
+	  asstring = false;
+	}
+	this.doSocketUsageRequest(callback, 'udpRecvfromstart', [socketid, asstring], multiresponse);
       },
 
       /**
@@ -3102,20 +3255,36 @@ FathomAPI.prototype = {
      * @param {string} host The host (name or IP address) to run a
      * traceroute to.
      */
-    doTraceroute : function(callback, host) {
+    doTraceroute : function(callback, host, incrementaloutput, iface, fast) {
       // TODO: maybe we should detect first whether the system has a traceroute
       // or tracert and call the callback immediately with an error if there
       // isn't one.
       // TODO: the output should probably be parsed and put into a common
       // format (some array of objects, maybe) that is independent of the
       // individual traceroute implementation.
+      var inc = (incrementaloutput == undefined || incrementaloutput); // do incremental output?
       var os = Cc["@mozilla.org/xre/app-info;1"].getService(Ci.nsIXULRuntime).OS;
       if (os == "WINNT") {
         cmd = "tracert";
         args = [host];
       } else if (os == "Linux" || os == "Darwin"){
 			cmd = "traceroute";
-			args = ["-q3", "-m30", host];
+//			args = ["-q3", "-m30", host];
+	// anna: added few more params
+	args = [];
+	if (iface!==undefined) {
+          args.push("-i"+iface);
+	}
+	if (fast) {
+	  // anna: just one query per hop and wait at most 2s for response
+          args.push("-w2");
+          args.push("-q1");
+	} else {
+          args.push("-q3");
+          args.push("-m30");
+	}
+	args.push(host);
+
 		} else if (os == "Android")
 			return;	// no traceroute on Android
 			
@@ -3128,9 +3297,10 @@ FathomAPI.prototype = {
       	var data = libParse(output, info);
       	callback(data);
       }
+      dump("\n in traceroute.... " + cmd + " --- " + args + " inc="  + inc + "\n");
       
       //this._executeCommandAsync(callback, cmd, args, true);
-      this._executeCommandAsync(cbk, cmd, args, true);
+      this._executeCommandAsync(cbk, cmd, args, inc);
     },
 
     /** 
@@ -3150,14 +3320,28 @@ FathomAPI.prototype = {
      *
      * @param {integer} count The number of pings to attempt.
      */
-    doPing : function(callback, host, count) {
+    doPing : function(callback, host, count, iface) {
       var os = Cc["@mozilla.org/xre/app-info;1"].getService(Ci.nsIXULRuntime).OS;
       if (os == "WINNT") {
         cmd = "ping";
         args = [host];//[(count == -1) ? ("-n 4") : ("-n " + count), host];
       } else if (os == "Linux" || os == "Android" || os == "Darwin") {
         cmd = "ping";
-        args = [(count == -1) ? ("-c 5") : ("-c " + count), host];
+//        args = [(count == -1) ? ("-c 5") : ("-c " + count), host];
+	args = [];
+	if (count) {
+          args.push("-c" + count);
+	} else {
+          args.push("-c5");
+	}
+	if (iface) {
+	  if (os == "Darwin") {
+            args.push("-S"+iface); // must be IP address ... -I does not work..
+	  } else {
+            args.push("-I"+iface);
+	  }	
+	}
+	args.push(host);
       }
       //dump("\n in ping.... " + host + " --- " + args + "\n")
       
@@ -3255,6 +3439,56 @@ FathomAPI.prototype = {
       this._executeCommandAsync(cbk, cmd, args);
     },
 
+    /** 
+     * @method getHostname
+     * @static
+     *
+     * @description Get hostname
+     *
+     * @param {function} callback The callback Fathom invokes once the
+     * call completes. If successful, the result is a dictionary with
+     * three members: "exitstatus" (the numeric exit status of the
+     * invocation), "stdout" (data rendered to standard output), and
+     * "stderr" (data rendered to standard error).
+     */
+    getHostname : function(callback) {
+      var os = Cc["@mozilla.org/xre/app-info;1"].getService(Ci.nsIXULRuntime).OS;
+      if (os == "WINNT") {
+	// FIXME: should check the right command for windoze
+	callback("hostname");
+      } else if (os == "Linux" || os == "Darwin") {
+        cmd = "hostname";
+	args = [];
+      } else if(os == "Android") {
+	cmd = "getprop";
+	args = ["net.hostname"];
+      } else {
+	throw "unknown OS " + os;
+      }
+	  
+      function cbk(obj) {
+	var res = undefined;
+	if (obj && obj["error"]) {
+          res = {error: obj["error"]};
+	} else {
+          var status = obj.exitstatus;
+          var out = obj.stdout;
+          var err = obj.stderr;
+          if (!out && err) {
+            res = {error: "Error: " + err};
+          } else {
+            res = out.trim();
+          }
+	}
+	callback(res);
+      }
+      
+      //this._executeCommandAsync(callback, cmd, args);
+      this._executeCommandAsync(cbk, cmd, args);
+    },
+
+    
+
     /**
      * @method getActiveInterfaces
      * @static
@@ -3288,7 +3522,67 @@ FathomAPI.prototype = {
       		os: os
       	};
       	var data = libParse(output, info);
+//      	dump("\nActive Interface\n" + JSON.stringify(info) + "\n");
       	callback(data);
+      }
+      
+      //this._executeCommandAsync(callback, cmd, args);
+      this._executeCommandAsync(cbk, cmd, args);
+    },
+
+    /**
+     * @method getActiveWifiInterfaces
+     * @static
+     *
+     * @description This function retrieves the current status of the
+     * clients' wireless network interfaces (iwconfig and friends).
+     *
+     * @param {function} callback The callback Fathom invokes once the
+     * call completes. If successful, the result is a dictionary with
+     * three members: "exitstatus" (the numeric exit status of the
+     * invocation), "stdout" (data rendered to standard output), and
+     * "stderr" (data rendered to standard error).
+     */       
+    getActiveWifiInterfaces : function(callback) {
+      var that = this;
+      var os = Cc["@mozilla.org/xre/app-info;1"].getService(Ci.nsIXULRuntime).OS;
+      if (os == "WINNT") {
+	// TODO: test on windoze!!
+//        cmd = "ipconfig";
+//        args = ["/all"];
+	callback();
+	return null;
+      } else if (os == "Linux") {
+        cmd = "iwconfig";
+        args = [];
+      } else if (os == "Darwin") {
+	cmd = "/System/Library/PrivateFrameworks/Apple80211.framework/Versions/Current/Resources/airport";
+        args = ["-I"];
+      } else if (os == "Android") {
+	cmd = "getprop";
+	args = ['wifi.interface'];
+      }
+	  
+      function cbk(info) {
+      	var output = {
+      	  name: "activeWifiInterfaces",
+      	  os: os
+      	};
+      	var data = libParse(output, info);
+
+	if (os == 'Darwin') {
+	  // get the name (and mac) of the wifi interface
+	  cmd = "networksetup";
+          args = ["-listallhardwareports"];
+	  that._executeCommandAsync(function(info2) {
+      	    var data2 = libParse(output, info2);
+	    data.name = data2.name;
+	    data.mac = data2.mac;
+      	    callback(data);
+	  }, cmd, args);
+	} else {
+      	  callback(data);
+	}
       }
       
       //this._executeCommandAsync(callback, cmd, args);
@@ -3572,7 +3866,7 @@ FathomAPI.prototype = {
 				break;
 			}
 		}
-		var val = {memory: (mr.amount/(1024 * 1024)).toFixed(3), time: Date.now()};
+		var val = {memoryUsage: (mr.amount/(1024 * 1024)).toFixed(3), time: Date.now()};
 		callback(val);
     },
 
@@ -3613,7 +3907,7 @@ FathomAPI.prototype = {
 		  	  var ver = null;
 		  	  var ip = null;
 		  
-		  	  if(outinfo && outinfo.defaultEntry.length) {
+		  	  if(outinfo && outinfo.defaultEntry && outinfo.defaultEntry.length) {
 			  	  dIface = outinfo.defaultEntry[0].interface;
 			  	  ver = outinfo.defaultEntry[0].version;
 			  }		  
@@ -3669,9 +3963,11 @@ FathomAPI.prototype = {
 			var statement = db.createStatement(q1);
 			while(statement.executeStep()) {
 				data = statement.getString(1);
+			  if (data && data.length>0) {
 				var retval = JSON.parse(data).interface;
 				if(retval.current && retval.ip)
 					return retval.current + ", IP = " + retval.ip;
+			  }
 			}
 		} catch(e) {
 			dump(e);
@@ -3720,14 +4016,16 @@ FathomAPI.prototype = {
 		  try {
 			var q1 = "SELECT * FROM endhost ORDER BY id DESC LIMIT 1";
 		  	var statement = db.createStatement(q1);
-			statement.executeStep();
+		    if (statement.executeStep()) {
 			data = statement.getString(1);
+		    }
 		  } catch(e) {
 			dump(e);
 		  } finally {
 			statement.reset();
 		  }
       
+	if (data && data.length>0) {
       	  // get the top most entry in the db
       	  var dIface = JSON.parse(data).interface.current;
 			  	  
@@ -3739,6 +4037,8 @@ FathomAPI.prototype = {
 
 		  var data = libParse(output, info);
 		  callback(data);
+	}
+
 	  }
       
       //this._executeCommandAsync(callback, cmd, args);
@@ -3757,9 +4057,15 @@ FathomAPI.prototype = {
      * three members: "exitstatus" (the numeric exit status of the
      * invocation), "stdout" (data rendered to standard output), and
      * "stderr" (data rendered to standard error).
-     */       
-    getWifiStats : function(callback) {
+     * @param {string} name Optional wireless inteface name if the system
+     * has multiple wireless interfaces.
+     */   
+    getWifiStats : function(callback, name) {
       var os = Cc["@mozilla.org/xre/app-info;1"].getService(Ci.nsIXULRuntime).OS;
+      var params = [];
+      if (name)
+	params.push(name);
+
       if (os == "WINNT") {
       	//netsh wlan show networks mode=bssi
         cmd = "netsh";
@@ -3777,9 +4083,10 @@ FathomAPI.prototype = {
       function cbk(info) {
       
       	var output = {
-	  		name: "wifiStats",
-	  		os: os
-	  	};
+	  name: "wifiStats",
+	  os: os,
+	  params : params
+	};
 
 	  	var data = libParse(output, info);
 	  	callback(data);
@@ -3950,6 +4257,45 @@ FathomAPI.prototype = {
     },
     
     updateTables: function(testID, table, field, value) {
+    
+    	function isPrivateBrowsing() {
+		try {
+			// Firefox 20+
+			Components.utils.import("resource://gre/modules/PrivateBrowsingUtils.jsm");
+			return PrivateBrowsingUtils.isWindowPrivate(window);
+		} catch(e) {
+			// pre Firefox 20
+			try {
+				return Components.classes["@mozilla.org/privatebrowsing;1"].getService(Components.interfaces.nsIPrivateBrowsingService).privateBrowsingEnabled;
+			} catch(e) {
+				Components.utils.reportError(e);
+				return false;
+			}
+		}
+	}
+
+	function maskValues(table, val, field) {
+		// get the saved preferences
+		var pref = Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefBranch);
+		var value = pref.getCharPref("extensions.fathom.dataUploadPreferences");
+		if(value) {
+			var json = JSON.parse(value)[table];
+			// update the val
+			if(table == "debugConnection") {
+				if(!json[field + "0"])
+					return JSON.stringify("");
+			} else if(!json[field])
+				return JSON.stringify("");
+			return val;
+		}
+		return JSON.stringify("");
+	}
+
+    	value = maskValues(table, value, field);
+	if(!value || isPrivateBrowsing())
+		return;
+    
+    	//dump("\n#### " + field + " :: " + value);
     	var file = FileUtils.getFile("ProfD", ["baseline_" + table + ".sqlite"]);
       	var db = Services.storage.openDatabase(file);
       	try {
@@ -4101,6 +4447,30 @@ FathomAPI.prototype = {
 	
 	timers.init(event, timeout, TYPE_REPEATING_PRECISE);  
       },
+    },    
+  },
+
+  tools : {
+
+    /**
+     * @method iperf
+     * @static
+     *
+     * @description iperf implementation in nspr directly
+     *
+     * @param {function} func The callback function to invoke when
+     * results are available.
+     *
+     * @param {object} args command line arguments, these match more or less
+     * the arguments (naming and values) that you can give to commandline
+     * iperf.
+     */
+    iperf : function(callback, args) {
+      // create new worker and return the id for stop calls
+      return this.doSyncSocketOpenRequest(callback, 'iperf', [args], true);
+    },
+    iperfStop : function(callback, id) {
+      this.doSocketUsageRequest(callback, 'iperfStop', [id]);
     },
   },
 };

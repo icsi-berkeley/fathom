@@ -31,6 +31,22 @@ Cu.import("resource://gre/modules/NetUtil.jsm");
 Cu.import("resource://gre/modules/FileUtils.jsm");  
 Cu.import("resource://gre/modules/Services.jsm");
 
+function isPrivateBrowsing() {
+	try {
+		// Firefox 20+
+		Cu.import("resource://gre/modules/PrivateBrowsingUtils.jsm");
+		return PrivateBrowsingUtils.isWindowPrivate(window);
+	} catch(e) {
+		// pre Firefox 20
+		try {
+			return Cc["@mozilla.org/privatebrowsing;1"].getService(Ci.nsIPrivateBrowsingService).privateBrowsingEnabled;
+		} catch(e) {
+			Cu.reportError(e);
+			return false;
+		}
+	}
+}
+
 /*-------------------------------- I/O Helpers -------------------------------*/
 
 function initTables(table, file) {
@@ -46,6 +62,8 @@ function initTables(table, file) {
 }
 
 function updateTables(table, db, json) {
+	if(isPrivateBrowsing())
+		return;
 	var q3 = "INSERT INTO " + table + " (id, json) values (NULL, '" + json + "')";
 	var q4 = "DELETE FROM " + table + " WHERE id NOT IN (SELECT id FROM " + table + " ORDER BY id DESC LIMIT " + HISTORY_LENGTH + ")";
 	execQuery(db, [q3, q4]);
@@ -96,17 +114,42 @@ function execQuery(db, query) {
 
 /*------------------------------- Metric Helpers -----------------------------*/
 
+function maskValues(val, list) {
+	// get the saved preferences
+	var pref = Cc["@mozilla.org/preferences-service;1"].getService(Ci.nsIPrefBranch);
+	var value = pref.getCharPref("extensions.fathom.dataUploadPreferences");
+	if(value) {
+		var json = JSON.parse(value)["passive"];
+		// update the val
+		for(var i = 0; i < list.length; i++) {
+			if(!json[list[i]])
+				val[list[i]] = null;
+		}
+		return val;
+	}
+	return null;
+}
+
 function saveBrowserMemoryUsage(val) {
+	val = maskValues(val, ["memoryUsage"]);
+	if(!val)
+		return;
 	updateTables("browserMemory", baselinefiles["browserMemory"], JSON.stringify(val));
 	val = null;
 }
 
 function saveSystemHistory(val) {
-  updateTables("system", baselinefiles["system"], JSON.stringify(val));
+	val = maskValues(val, ["cpu", "memory", "tasks"]);
+  if(!val)
+		return;
+	updateTables("system", baselinefiles["system"], JSON.stringify(val));
   val = null;
 }
 
 function saveWiFiHistory(val) {
+	val = maskValues(val, ["link", "signal", "noise"]);
+	if(!val)
+		return;  
   updateTables("wifi", baselinefiles["wifi"], JSON.stringify(val));
   val = null;
 }
@@ -115,11 +158,17 @@ function saveNWHistory(val) {
   var obj = val;
   obj.httpsend = totalHTTPsend;
   obj.httprecv = totalHTTPrecv;
+  val = maskValues(val, ["tx", "rx", "httpsend", "httprecv"]);
+  if(!val)
+		return;
   updateTables("traffic", baselinefiles["traffic"], JSON.stringify(obj));
   obj = val = null;
 }
 
 function saveEndHostHistory(val) {
+	val = maskValues(val, ["interface", "browser", "os", "dns"]);	
+	if(!val)
+		return;  
   updateTables("endhost", baselinefiles["endhost"], JSON.stringify(val));
   val = null;
 }
@@ -152,6 +201,8 @@ var timerevent = {
       sysutils.system.getWifiStats(saveWiFiHistory);
       sysutils.system.getIfaceStats(saveNWHistory);
       sysutils.system.getBrowserMemoryUsage(saveBrowserMemoryUsage);
+    } else {
+      dump("sysutils not found - no performance measurements done!");
     }
     sysutils = null;
   }
@@ -162,6 +213,8 @@ var endhostinfo = {
 	var sysutils = handleObj.getHandleToFathom();
 	if(sysutils) {
 		sysutils.system.getEndHostInfo(saveEndHostHistory);
+	} else {
+	  dump("sysutils not found - no endhost measurements done!");
 	}
 	sysutils = null;
 	// force garbage collection

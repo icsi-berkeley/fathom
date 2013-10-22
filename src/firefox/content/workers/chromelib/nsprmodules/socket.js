@@ -18,4 +18,8 @@ function closeSocket(socketid) {
   }
   NSPR.sockets.PR_Close(fd);
   util.unregisterSocket(socketid);
+
+  // Anna: sending flags to fathom to clean up this worker
+  util.postResult({closed : true});
+  setTimeout(close, 1);
 }

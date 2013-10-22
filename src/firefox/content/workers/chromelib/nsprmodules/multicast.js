@@ -128,8 +128,10 @@ function multicastReceive(socketid) {
 /**
  * @returns The bytes received as an array of integers between 0 and 255, and
  * the peer ip. The object returned is {text , peer}
+ *
+ * Anna: adding support for returning a string instead of the raw byte array.
  */
-function multicastReceiveDetails(socketid) {
+function multicastReceiveDetails(socketid, asstring) {
   var fd = util.getRegisteredSocket(socketid);
 
   // Practical limit for IPv4 UDP packet data length is 65,507 bytes.
@@ -147,10 +149,17 @@ function multicastReceiveDetails(socketid) {
     return {error: 'Network connection is closed'};
   }
 
+  var out = undefined;
+  if (asstring) {
+    // make sure the string terminates at correct place as buffer reused
+    recvbuf[rv] = 0; 
+    out = recvbuf.readString();
+  } else {
   var bytesreceived = rv;
-  var out = [];
+  out = [];
   for (var i = 0; i < bytesreceived; i++) {
     out.push(recvbuf[i]);
+  }
   }
   return {"text" : out, "peer" : {"ip" : NSPR.util.NetAddrToString(addr), "port" : addr.port}};
 }

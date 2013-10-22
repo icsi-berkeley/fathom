@@ -15,7 +15,7 @@
 					
 					var time = item.time - (new Date()).getTimezoneOffset()*60*1000;
 					
-					mem.memory.push([time, item.memory]);
+					mem.memory.push([time, item.memoryUsage]);
 				}
 			},
 

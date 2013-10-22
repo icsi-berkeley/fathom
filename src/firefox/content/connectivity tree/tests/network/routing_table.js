@@ -11,6 +11,8 @@
 		},
 		timeout: 50,
 		cbFunction: function(info) {
+			if(info && !info.defaultEntry)
+				return;
 			//dump("\n" + JSON.stringify(info) + "\n");
 			routing_table.test.output = info.defaultEntry.length ? info : null;
 			if(!routing_table.test.output)

@@ -19,3 +19,8 @@ pref("extensions.fathom.version", "@VERSION@");
 pref("extensions.fathom.build", "@BUILD@");
 
 pref("extensions.fathom.installationID", "");
+
+pref("extensions.fathom.dataUploadPreferences", "");
+pref("extensions.fathom.dataUploadFrequency", 0);
+pref("extensions.fathom.lastAutomaticDataUpload", 0);
+pref("extensions.fathom.firstInstall", "");

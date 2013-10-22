@@ -14,7 +14,7 @@
 
   <Description about="urn:mozilla:install-manifest">
     <em:name>Fathom</em:name>
-    <em:version>0.2build742</em:version>
+    <em:version>0.2build</em:version>
     <em:type>2</em:type>
     <em:description>A Browser-based Network Measurement Platform</em:description>
     <em:creator>International Computer Science Institute</em:creator>
@@ -25,7 +25,7 @@
     <em:unpack>true</em:unpack>
     
     <em:updateURL>http://fathom.icsi.berkeley.edu/downloads/update.rdf</em:updateURL>
-    <em:updateKey>MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCaZ4+jzpLhBjzVvL5Gji8SVN1pkNQwiCG1WwnB1RQNSIftDlJfYSPBfGDnpOtYJKWh8RuKIZ1k8oUyJWSmBGyp1TCwhDppHflAGVC+DaaN0Ax6XIn9SI9Ung/AtO5CORKiBH6Qnt/wDSm5iRsy97MSzRg32eE06COJw7z2wpNUhwIDAQAB</em:updateKey>
+    <em:updateKey>MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCaww+igknCDR2/kWisLU8lnxGqCr50lL1oIRJHvKokqskEtyB+p1FS5Tiq1rkCdiNb3RFU9e9PYNiLT/zqx3hMn6u+EFbpjInKgit79YTTQa+LveB1oOgkXJHYXfDE7aNB06xMGhIFzt3cu2o7VSs32bijHsjESI4AHCdKTFHODwIDAQAB</em:updateKey>
 
     <em:contributor>Mohan Dhawan</em:contributor>
     <em:contributor>Christian Kreibich</em:contributor>

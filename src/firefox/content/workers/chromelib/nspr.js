@@ -66,7 +66,7 @@ function openLibrary(name, path) {
     try {
       return ctypes.open(path);
     } catch (e) {
-      throw 'Unable to open library through cytpes: ' + path + ' ' + e;
+      throw 'Unable to open library through ctypes: ' + path + ' ' + e;
     }
   }
 }
@@ -82,7 +82,7 @@ function openLibrary(name, path) {
  * Windows has 4 bytes of padding.
  */
 function getFirstNetAddrPad() {
-  let lib = openLibrary("nspr4", util.nsprpath);
+  let lib = openLibrary(util.nsprname, util.nsprpath);
 
   try {
     var PR_AF_INET = 2;
@@ -124,7 +124,7 @@ function getFirstNetAddrPad() {
 
    var opt = new SocketOptionData();
 
-   function getOffset() {
+   var getOffset = function() {
      // Initialize the non-option bytes of our PRSocketOptionData so that they
      // contain byte values corresponding to their position (0 to 255). We'll
      // check for what has changed after NSPR function calls modify the data.
@@ -185,7 +185,7 @@ function getFirstNetAddrPad() {
 
 
 try {
-  let lib = openLibrary("nspr4", util.nsprpath);
+  let lib = openLibrary(util.nsprname, util.nsprpath);
   //var padding = getPaddingInfo(system_arch);
 
   //util.log("padding: " + padding.toString());
@@ -907,6 +907,14 @@ try {
 
   NSPR.util = {
   
+    PR_Now : lib.declare("PR_Now",
+      ctypes.default_abi,
+      ctypes.uint64_t),
+
+    PR_IntervalNow : lib.declare("PR_IntervalNow",
+      ctypes.default_abi,
+      ctypes.uint32_t),
+
     PR_SI_HOSTNAME				: 0,
 	PR_SI_SYSNAME				: 1,
 	PR_SI_RELEASE				: 2,
